@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vivtrack 4 Builder</title>
+  <style>
+    :root {
+      --ink: #18211f;
+      --muted: #63706c;
+      --line: #d8dedb;
+      --paper: #fbfcfb;
+      --panel: #ffffff;
+      --field: #fff7b8;
+      --field-focus: #ffef6a;
+      --accent: #007a5f;
+      --accent-dark: #005742;
+      --blue: #225b82;
+      --shadow: 0 16px 38px rgba(27, 42, 38, 0.11);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(0, 122, 95, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(0, 122, 95, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 42px 42px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea, output { font: inherit; }
+    a { color: inherit; }
+
+    .app-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(24, 33, 31, 0.08);
+    }
+
+    .app-tabs a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .app-tabs a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .app {
+      min-height: calc(100vh - 61px);
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      border-right: 1px solid var(--line);
+    }
+
+    .main { padding: 24px; }
+
+    .brand-logo {
+      width: 180px;
+      max-width: 100%;
+      display: block;
+      margin-bottom: 18px;
+    }
+
+    .mast {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.08;
+    }
+
+    .status {
+      align-self: start;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #e6f4ef;
+      color: var(--accent-dark);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .section, .panel, .actions, .metric {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .section {
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-title, .panel h2, .actions h2 {
+      margin: 0 0 12px;
+      font-size: 15px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .field.full, .check-field.full { grid-column: 1 / -1; }
+
+    label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid #b8c2be;
+      border-radius: var(--radius);
+      background: var(--field);
+      color: var(--ink);
+      padding: 8px 10px;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--field-focus);
+      outline-offset: 1px;
+    }
+
+    .check-field {
+      display: grid;
+      grid-template-columns: auto 52px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      min-height: 70px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f4f7f6;
+    }
+
+    .check-field input {
+      width: 19px;
+      height: 19px;
+      min-height: 19px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .check-field img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .check-field span {
+      min-width: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-transform: uppercase;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      padding: 14px;
+      min-height: 92px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .left-stack, .right-stack {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel, .actions { padding: 18px; }
+
+    .diagram-wrap {
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f4f7f6;
+      overflow: hidden;
+    }
+
+    svg { display: block; width: 100%; height: auto; }
+
+    .product-photo {
+      display: block;
+      width: min(100%, 360px);
+      max-height: 240px;
+      object-fit: contain;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .cube-line {
+      stroke: #87918d;
+      stroke-width: 7;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .brace-line {
+      stroke: var(--blue);
+      stroke-width: 3;
+      fill: none;
+      stroke-linecap: round;
+      opacity: 0.9;
+    }
+
+    .dim {
+      stroke: #34413d;
+      stroke-width: 1.4;
+    }
+
+    .guide {
+      stroke: #9aa8a3;
+      stroke-width: 1;
+      stroke-dasharray: 5 6;
+    }
+
+    .dim-labels {
+      fill: #34413d;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table th, .table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .table .num { text-align: right; white-space: nowrap; }
+
+    .button-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cart-button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 54px;
+      border: 1px solid var(--accent-dark);
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      padding: 11px 12px;
+      box-shadow: 0 8px 18px rgba(0, 122, 95, 0.18);
+    }
+
+    .cart-button.secondary {
+      background: #225b82;
+      border-color: #17415d;
+    }
+
+    .cart-button.combo {
+      background: #000000;
+      border-color: #000000;
+    }
+
+    .cart-button.combo:hover {
+      background: #171717;
+    }
+
+    .cart-button small {
+      opacity: 0.86;
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    .url-box, .description-box {
+      width: 100%;
+      min-height: 110px;
+      margin-top: 12px;
+      background: #eef3f1;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+      resize: vertical;
+    }
+
+    .description-box {
+      min-height: 210px;
+      background: #eef3f1;
+    }
+
+    @media (max-width: 1060px) {
+      .app, .workspace { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 680px) {
+      .app-tabs, .summary-grid, .grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+    }
+  </style>
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js"></script>
+</head>
+<body>
+  <nav class="app-tabs" aria-label="Application pages">
+    <a href="index.html">Backlit</a>
+    <a href="edgelit.html">Edgelit</a>
+    <a href="r300/index.html">R300</a>
+    <a href="palisade.html">Palisade</a>
+    <a class="active" href="cube.html">Cube</a>
+    <a href="https://vivad.com.au/shopping-cart">Go to Cart</a>
+  </nav>
+  <div class="app">
+    <aside class="sidebar">
+      <img class="brand-logo" src="vivad-logo.png" alt="Vivad">
+      <div class="mast">
+        <div>
+          <h1>Vivtrack 4 Builder</h1>
+        </div>
+        <div class="status">Live</div>
+      </div>
+      <form id="configForm">
+        <section class="section">
+          <h2 class="section-title">Quote Inputs</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="shortName">Short Name</label>
+              <input id="shortName" name="shortName" value="">
+            </div>
+            <div class="field">
+              <label for="quantity">QTY</label>
+              <input id="quantity" name="quantity" type="number" min="1" step="1" value="1">
+            </div>
+            <div class="field">
+              <label for="width">Width mm</label>
+              <input id="width" name="width" type="number" min="100" step="1" value="3000">
+            </div>
+            <div class="field">
+              <label for="depth">Depth mm</label>
+              <input id="depth" name="depth" type="number" min="100" step="1" value="3000">
+            </div>
+            <div class="field">
+              <label for="height">Height mm</label>
+              <input id="height" name="height" type="number" min="100" step="1" value="1500">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Graphic Inserts</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="topBottomQty">Top and Bottom QTY</label>
+              <input id="topBottomQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="topBottomMaterial">Material</label>
+              <select id="topBottomMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="backFrontQty">Back and Front QTY</label>
+              <input id="backFrontQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="backFrontMaterial">Material</label>
+              <select id="backFrontMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="sidesQty">Sides QTY</label>
+              <input id="sidesQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="sidesMaterial">Material</label>
+              <select id="sidesMaterial"></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Options</h2>
+          <div class="grid">
+            <label class="check-field full">
+              <input id="includeRigging" type="checkbox">
+              <img src="r300/assets/rigging-point.png" alt="">
+              <span id="riggingLabel">Include Rigging Points</span>
+            </label>
+          </div>
+        </section>
+      </form>
+    </aside>
+
+    <main class="main">
+      <section class="summary-grid" aria-label="Summary">
+        <div class="metric">
+          <span>Frame Price Ex GST</span>
+          <strong id="framePrice">$0</strong>
+          <small id="frameMeta">Cube frame.</small>
+        </div>
+        <div class="metric">
+          <span>Graphics Price Ex GST</span>
+          <strong id="graphicsPrice">$0</strong>
+          <small>$65 per sqm.</small>
+        </div>
+        <div class="metric">
+          <span>Total Price Ex GST</span>
+          <strong id="grandTotal">$0</strong>
+          <small>Ex GST.</small>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="left-stack">
+          <section class="panel">
+            <h2>Layout</h2>
+            <div class="diagram-wrap" id="diagram"></div>
+          </section>
+          <section class="panel">
+            <h2>Product Photo</h2>
+            <img class="product-photo" src="cube-product.jpg" alt="Cube product photo">
+          </section>
+          <section class="panel" hidden>
+            <h2>Cost Components</h2>
+            <table class="table">
+              <thead>
+                <tr><th>Item</th><th class="num">Qty</th><th class="num">Size</th><th class="num">Cost</th></tr>
+              </thead>
+              <tbody id="lineItems"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <div class="right-stack">
+          <section class="actions">
+            <h2>Cart Links</h2>
+            <div class="button-grid" id="cartButtons"></div>
+            <textarea class="url-box" id="selectedUrl" readonly></textarea>
+          </section>
+          <section class="panel">
+            <h2>Description</h2>
+            <textarea class="description-box" id="description" readonly></textarea>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DATA = {
+      frameQcode: "Q143933-01",
+      cubeExtrusionCostPerM: 25,
+      cubeExtrusionKgPerM: 0.892,
+      minibraceCostPerM: 11.23,
+      minibraceKgPerM: 0.402,
+      cubeCornerOffset: 55,
+      cornerCost: 30,
+      tensionLockCost: 30,
+      printRate: 65,
+      graphicsGsm: 250,
+      riggingPointCost: 12,
+      riggingPointWeightKg: 0.07,
+      riggingPointDist: 2000,
+      minibraceThreshold: 2100,
+      minibraceOffset: 30,
+      graphics: {
+        standard: { name: "Standard Graphic", qcode: "Q141165-02" },
+        blockout: { name: "Blockout Graphics", qcode: "Q118020-02" },
+        polarlight: { name: "Polarlight", qcode: "Q54823-09" },
+        d51: { name: "D51", qcode: "Q118020-12" }
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const FORM_STATE_KEY = "vivalux-cube-form-state";
+    const SHARED_DIMENSION_STATE_KEY = "vivalux-shared-frame-dimensions";
+    const SHARED_DIMENSION_LINKS = new Set(["r300/index.html", "palisade.html", "cube.html"]);
+    const DEFAULT_SHARED_DIMENSIONS = { width: 3000, depth: 3000, height: 1500 };
+    const PRICE_MULTIPLIER = 1.4285714;
+    const money = (value) => `$${(Number.isFinite(value) ? value : 0).toLocaleString("en-AU", { maximumFractionDigits: 2 })}`;
+    const whole = (value) => Math.round(Number.isFinite(value) ? value : 0);
+    const encode = encodeURIComponent;
+
+    function increasedPrice(value) {
+      const number = Number(value);
+      const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
+      return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+    }
+
+    function init() {
+      const graphicOptions = Object.entries(DATA.graphics).map(([id, item]) =>
+        `<option value="${id}">${item.name}</option>`
+      ).join("");
+      ["topBottomMaterial", "backFrontMaterial", "sidesMaterial"].forEach((id) => {
+        $(id).innerHTML = graphicOptions;
+      });
+    }
+
+    function saveFormState() {
+      try {
+        const state = {};
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          state[el.name || el.id] = el.value;
+        });
+        localStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+    }
+
+    function restoreFormState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(FORM_STATE_KEY) || "{}");
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          const key = el.name || el.id;
+          if (Object.prototype.hasOwnProperty.call(state, key)) {
+            el.value = state[key];
+          }
+        });
+      } catch {
+        /* Ignore malformed saved state. */
+      }
+    }
+
+    function positiveNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : null;
+    }
+
+    function clampForInput(input, value) {
+      const min = input.min === "" ? null : Number(input.min);
+      const max = input.max === "" ? null : Number(input.max);
+      let clamped = value;
+      if (Number.isFinite(min)) clamped = Math.max(min, clamped);
+      if (Number.isFinite(max)) clamped = Math.min(max, clamped);
+      return clamped;
+    }
+
+    function setSharedDimensionInput(id, value) {
+      const input = $(id);
+      const number = positiveNumber(value);
+      if (!input || number === null) return;
+      input.value = String(Math.round(clampForInput(input, number)));
+    }
+
+    function normalizedSharedDimensions(source) {
+      const dimensions = {};
+      ["width", "height"].forEach((key) => {
+        const value = positiveNumber(source && source[key]);
+        if (value !== null) dimensions[key] = value;
+      });
+      const depth = positiveNumber(source && (source.depth ?? source.length));
+      if (depth !== null) dimensions.depth = depth;
+      return dimensions;
+    }
+
+    function readStoredSharedDimensions() {
+      try {
+        return normalizedSharedDimensions(JSON.parse(localStorage.getItem(SHARED_DIMENSION_STATE_KEY) || "{}"));
+      } catch {
+        return {};
+      }
+    }
+
+    function readUrlSharedDimensions() {
+      const params = new URLSearchParams(window.location.search);
+      return normalizedSharedDimensions({
+        width: params.get("width"),
+        depth: params.get("depth") || params.get("length"),
+        height: params.get("height")
+      });
+    }
+
+    function currentSharedDimensions() {
+      return {
+        width: positiveNumber($("width").value) || 3000,
+        depth: positiveNumber($("depth").value) || 3000,
+        height: positiveNumber($("height").value) || 1500
+      };
+    }
+
+    function updateSharedDimensionLinks(dimensions = currentSharedDimensions()) {
+      document.querySelectorAll(".app-tabs a").forEach((link) => {
+        const originalHref = link.dataset.dimensionHref || link.getAttribute("href") || "";
+        link.dataset.dimensionHref = originalHref;
+        if (!SHARED_DIMENSION_LINKS.has(originalHref)) return;
+
+        const url = new URL(originalHref, window.location.href);
+        url.searchParams.set("width", String(Math.round(dimensions.width)));
+        url.searchParams.delete("length");
+        url.searchParams.set("depth", String(Math.round(dimensions.depth)));
+        url.searchParams.set("height", String(Math.round(dimensions.height)));
+        link.href = url.href;
+      });
+    }
+
+    function saveSharedFrameDimensions() {
+      const dimensions = currentSharedDimensions();
+      try {
+        localStorage.setItem(SHARED_DIMENSION_STATE_KEY, JSON.stringify(dimensions));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+      updateSharedDimensionLinks(dimensions);
+    }
+
+    function restoreSharedFrameDimensions() {
+      const dimensions = { ...DEFAULT_SHARED_DIMENSIONS, ...readUrlSharedDimensions() };
+      setSharedDimensionInput("width", dimensions.width);
+      setSharedDimensionInput("depth", dimensions.depth);
+      setSharedDimensionInput("height", dimensions.height);
+    }
+
+    function numberValue(id, fallback) {
+      return Math.max(0, Number($(id).value) || fallback);
+    }
+
+    function getConfig() {
+      return {
+        shortName: $("shortName").value.trim(),
+        quantity: Math.max(1, Math.round(numberValue("quantity", 1))),
+        width: Math.max(100, numberValue("width", 3000)),
+        depth: Math.max(100, numberValue("depth", 3000)),
+        height: Math.max(100, numberValue("height", 1500)),
+        includeRigging: $("includeRigging").checked,
+        inserts: [
+          { key: "topBottom", label: "Cube Top and Bottom", qty: Math.max(0, Math.round(numberValue("topBottomQty", 0))), material: $("topBottomMaterial").value || "standard" },
+          { key: "backFront", label: "Cube Back and Front", qty: Math.max(0, Math.round(numberValue("backFrontQty", 0))), material: $("backFrontMaterial").value || "standard" },
+          { key: "sides", label: "Cube Sides", qty: Math.max(0, Math.round(numberValue("sidesQty", 0))), material: $("sidesMaterial").value || "standard" }
+        ]
+      };
+    }
+
+    function cartUrl(params) {
+      return `https://vivad.com.au/shopping-cart?${Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null && value !== "")
+        .map(([key, value]) => `${encode(key)}=${encode(String(value))}`)
+        .join("&")}`;
+    }
+
+    function insertSize(cfg, key) {
+      if (key === "topBottom") return { width: cfg.width, height: cfg.depth };
+      if (key === "backFront") return { width: cfg.width, height: cfg.height };
+      return { width: cfg.depth, height: cfg.height };
+    }
+
+    function intermediateBraceCount(span) {
+      return Math.max(0, Math.ceil(span / DATA.minibraceThreshold) - 1);
+    }
+
+    function cubeExtrusionLength(span) {
+      return Math.max(0, span - 2 * DATA.cubeCornerOffset);
+    }
+
+    function cubeExtrusionGroups(widthLength, depthLength, heightLength) {
+      const groups = new Map();
+      [
+        { length: widthLength, qty: 4 },
+        { length: depthLength, qty: 4 },
+        { length: heightLength, qty: 4 }
+      ].forEach((item) => {
+        if (item.length <= 0 || item.qty <= 0) return;
+        groups.set(item.length, (groups.get(item.length) || 0) + item.qty);
+      });
+      return Array.from(groups, ([length, qty]) => ({ length, qty }));
+    }
+
+    function riggingPointQty(cfg) {
+      return [cfg.width, cfg.depth, cfg.width, cfg.depth]
+        .reduce((sum, run) => sum + Math.ceil(run / DATA.riggingPointDist), 0);
+    }
+
+    function calculate() {
+      const cfg = getConfig();
+      const widthExtrusionLength = cubeExtrusionLength(cfg.width);
+      const depthExtrusionLength = cubeExtrusionLength(cfg.depth);
+      const heightExtrusionLength = cubeExtrusionLength(cfg.height);
+      const extrusionGroups = cubeExtrusionGroups(widthExtrusionLength, depthExtrusionLength, heightExtrusionLength);
+      const widthExtrusionMm = widthExtrusionLength * 4;
+      const depthExtrusionMm = depthExtrusionLength * 4;
+      const heightExtrusionMm = heightExtrusionLength * 4;
+      const widthBracesPerFace = intermediateBraceCount(cfg.width);
+      const depthBracesPerFace = intermediateBraceCount(cfg.depth);
+      const minibraceQty = 2 * (widthBracesPerFace + depthBracesPerFace);
+      const minibraceLength = Math.max(0, cfg.height - DATA.minibraceOffset);
+      const tensionLockQty = minibraceQty * 2;
+      const cornerQty = 8;
+      const numberRiggingPoints = riggingPointQty(cfg);
+      const riggingCost = cfg.includeRigging ? numberRiggingPoints * DATA.riggingPointCost : 0;
+
+      const widthCost = widthExtrusionMm / 1000 * DATA.cubeExtrusionCostPerM;
+      const depthCost = depthExtrusionMm / 1000 * DATA.cubeExtrusionCostPerM;
+      const heightCost = heightExtrusionMm / 1000 * DATA.cubeExtrusionCostPerM;
+      const minibraceCost = minibraceQty * minibraceLength / 1000 * DATA.minibraceCostPerM;
+      const tensionLockCost = tensionLockQty * DATA.tensionLockCost;
+      const cornerCost = cornerQty * DATA.cornerCost;
+      const framePrice = widthCost + depthCost + heightCost + minibraceCost + tensionLockCost + cornerCost + riggingCost;
+
+      const inserts = cfg.inserts.map((item) => {
+        const size = insertSize(cfg, item.key);
+        const material = DATA.graphics[item.material] || DATA.graphics.standard;
+        const areaEach = size.width * size.height / 1000000;
+        return {
+          ...item,
+          ...size,
+          material,
+          areaEach,
+          totalArea: areaEach * item.qty
+        };
+      });
+      const graphicsArea = inserts.reduce((sum, item) => sum + item.totalArea, 0);
+      const graphicsPrice = graphicsArea * DATA.printRate;
+      const graphicsWeightKg = graphicsArea * DATA.graphicsGsm / 1000;
+      const riggingWeightKg = cfg.includeRigging ? numberRiggingPoints * DATA.riggingPointWeightKg : 0;
+      const weightKg = Math.round(
+        (widthExtrusionMm + depthExtrusionMm + heightExtrusionMm) * DATA.cubeExtrusionKgPerM / 1000 +
+        minibraceQty * minibraceLength * DATA.minibraceKgPerM / 1000 +
+        graphicsWeightKg +
+        riggingWeightKg
+      );
+
+      const longestExtrusionLength = Math.max(widthExtrusionLength, depthExtrusionLength, heightExtrusionLength);
+      const packingLengthCm = whole(longestExtrusionLength / 10);
+      const packingWidthCm = 14;
+      const packingHeightCm = 12;
+      const minibraceDescription = minibraceQty > 0 ? `${minibraceQty} Vertical Minibraces` : "No vertical minibraces";
+      const extrusionDescription = extrusionGroups
+        .map((group) => `${group.qty} Lengths of Cube Extrusion ${whole(group.length)} mm Long`)
+        .join("\r\n");
+      const description = [
+        "Cube frame",
+        `${whole(cfg.width)} mm (w) x ${whole(cfg.depth)} mm (d) x ${whole(cfg.height)} mm (h)`,
+        cfg.includeRigging && numberRiggingPoints > 0 ? `Includes ${numberRiggingPoints} rigging points.` : "",
+        extrusionDescription,
+        minibraceDescription,
+        "8 corners",
+        `Tension Locks: ${tensionLockQty}`,
+        `Weight: ${weightKg} Kg.`
+      ].filter(Boolean).join("\r\n");
+      const frameUrl = cartUrl({
+        qcode: DATA.frameQcode,
+        quantity: cfg.quantity,
+        shortname: cfg.shortName,
+        description,
+        packinglengthcm: packingLengthCm,
+        packingwidthcm: packingWidthCm,
+        packingheightcm: packingHeightCm,
+        weightkg: weightKg,
+        price: increasedPrice(framePrice).toFixed(2)
+      });
+
+      return {
+        cfg,
+        widthExtrusionLength,
+        depthExtrusionLength,
+        heightExtrusionLength,
+        extrusionGroups,
+        widthExtrusionMm,
+        depthExtrusionMm,
+        heightExtrusionMm,
+        minibraceQty,
+        minibraceLength,
+        tensionLockQty,
+        cornerQty,
+        numberRiggingPoints,
+        riggingCost,
+        riggingWeightKg,
+        framePrice,
+        weightKg,
+        inserts,
+        graphicsArea,
+        graphicsPrice,
+        graphicsWeightKg,
+        packingLengthCm,
+        packingWidthCm,
+        packingHeightCm,
+        description,
+        frameUrl,
+        lines: [
+          ...extrusionGroups.map((group) => ({
+            item: "Cube Extrusion",
+            qty: group.qty,
+            size: `${whole(group.length)} mm`,
+            cost: group.qty * group.length / 1000 * DATA.cubeExtrusionCostPerM
+          })),
+          { item: "Minibrace", qty: minibraceQty, size: `${whole(minibraceLength)} mm`, cost: minibraceCost },
+          { item: "Tension Locks", qty: tensionLockQty, size: "inc fitting", cost: tensionLockCost },
+          { item: "Corners", qty: cornerQty, size: "set", cost: cornerCost },
+          { item: "Rigging points", qty: cfg.includeRigging ? numberRiggingPoints : 0, size: "included in frame", cost: riggingCost },
+          ...inserts.filter((item) => item.qty > 0).map((item) => ({
+            item: `${item.material.name} ${item.label}`,
+            qty: item.qty,
+            size: `${whole(item.width)} x ${whole(item.height)} mm`,
+            cost: item.totalArea * DATA.printRate
+          }))
+        ]
+      };
+    }
+
+    function insertUrl(item) {
+      if (item.qty <= 0) return "";
+      return cartUrl({
+        qcode: item.material.qcode,
+        quantity: item.qty,
+        width: whole(item.width),
+        height: whole(item.height),
+        shortname: item.label,
+        price: increasedPrice(item.areaEach * DATA.printRate).toFixed(2)
+      });
+    }
+
+    function renderDiagram(result) {
+      const { cfg } = result;
+      const scale = Math.min(
+        480 / Math.max(1, cfg.width + cfg.depth * 0.58),
+        300 / Math.max(1, cfg.height + cfg.depth * 0.34)
+      );
+      const origin = { x: 130, y: 94 };
+      const project = (x, y, z) => ({
+        x: origin.x + x * scale + y * scale * 0.58,
+        y: origin.y + (cfg.height - z) * scale + y * scale * 0.34
+      });
+      const line = (x1, y1, z1, x2, y2, z2, className, extra = "") => {
+        const a = project(x1, y1, z1);
+        const b = project(x2, y2, z2);
+        return `<line class="${className}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" ${extra}/>`;
+      };
+      const textAt = (x, y, z, label, dx = 0, dy = 0, anchor = "middle") => {
+        const p = project(x, y, z);
+        return `<text x="${p.x + dx}" y="${p.y + dy}" text-anchor="${anchor}">${label}</text>`;
+      };
+      const edges = [
+        [0,0,0,cfg.width,0,0], [cfg.width,0,0,cfg.width,cfg.depth,0], [cfg.width,cfg.depth,0,0,cfg.depth,0], [0,cfg.depth,0,0,0,0],
+        [0,0,cfg.height,cfg.width,0,cfg.height], [cfg.width,0,cfg.height,cfg.width,cfg.depth,cfg.height], [cfg.width,cfg.depth,cfg.height,0,cfg.depth,cfg.height], [0,cfg.depth,cfg.height,0,0,cfg.height],
+        [0,0,0,0,0,cfg.height], [cfg.width,0,0,cfg.width,0,cfg.height], [cfg.width,cfg.depth,0,cfg.width,cfg.depth,cfg.height], [0,cfg.depth,0,0,cfg.depth,cfg.height]
+      ].map((args) => line(...args, "cube-line")).join("");
+      const braces = [];
+      const widthBraceCount = intermediateBraceCount(cfg.width);
+      for (let i = 1; i <= widthBraceCount; i += 1) {
+        const x = cfg.width * i / (widthBraceCount + 1);
+        braces.push(line(x, 0, 0, x, 0, cfg.height, "brace-line"));
+        braces.push(line(x, cfg.depth, 0, x, cfg.depth, cfg.height, "brace-line"));
+      }
+      const depthBraceCount = intermediateBraceCount(cfg.depth);
+      for (let i = 1; i <= depthBraceCount; i += 1) {
+        const y = cfg.depth * i / (depthBraceCount + 1);
+        braces.push(line(0, y, 0, 0, y, cfg.height, "brace-line"));
+        braces.push(line(cfg.width, y, 0, cfg.width, y, cfg.height, "brace-line"));
+      }
+      const dimWidth = line(0, -260, cfg.height, cfg.width, -260, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const dimDepth = line(cfg.width + 230, 0, cfg.height, cfg.width + 230, cfg.depth, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const dimHeightX = -8 / scale;
+      const dimHeight = line(dimHeightX, 0, 0, dimHeightX, 0, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const guides = [
+        line(0, 0, cfg.height, 0, -260, cfg.height, "guide"),
+        line(cfg.width, 0, cfg.height, cfg.width, -260, cfg.height, "guide"),
+        line(cfg.width, 0, cfg.height, cfg.width + 230, 0, cfg.height, "guide"),
+        line(cfg.width, cfg.depth, cfg.height, cfg.width + 230, cfg.depth, cfg.height, "guide"),
+        line(0, 0, 0, dimHeightX, 0, 0, "guide"),
+        line(0, 0, cfg.height, dimHeightX, 0, cfg.height, "guide")
+      ].join("");
+      $("diagram").innerHTML = `
+        <svg viewBox="0 0 760 520" role="img" aria-label="Cube isometric diagram with width, depth and height">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#34413d"/>
+            </marker>
+          </defs>
+          <rect x="0" y="0" width="760" height="520" fill="#f4f7f6"/>
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            ${guides}
+            ${dimWidth}
+            ${dimDepth}
+            ${dimHeight}
+            ${edges}
+            ${braces.join("")}
+          </g>
+          <g class="dim-labels">
+            <text x="28" y="34" text-anchor="start">Cube System</text>
+            ${textAt(cfg.width / 2, -260, cfg.height, `${whole(cfg.width)} mm Width`, 0, -12)}
+            ${textAt(cfg.width + 230, cfg.depth / 2, cfg.height, `${whole(cfg.depth)} mm Depth`, 22, 4, "start")}
+            ${textAt(dimHeightX, 0, cfg.height / 2, `${whole(cfg.height)} mm Height`, -10, 4, "end")}
+          </g>
+        </svg>
+      `;
+    }
+
+    function render() {
+      const result = calculate();
+      $("framePrice").textContent = money(increasedPrice(result.framePrice));
+      $("frameMeta").textContent = `${result.minibraceQty} minibraces, ${result.tensionLockQty} tension locks${result.cfg.includeRigging ? `, ${result.numberRiggingPoints} rigging points` : ""}`;
+      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(increasedPrice(result.numberRiggingPoints * DATA.riggingPointCost))} Ex GST)`;
+      $("graphicsPrice").textContent = money(increasedPrice(result.graphicsPrice));
+      $("grandTotal").textContent = money(increasedPrice(result.framePrice + result.graphicsPrice));
+      $("description").value = result.description;
+      $("lineItems").innerHTML = result.lines.filter((line) => line.qty > 0).map((line) => `
+        <tr>
+          <td>${line.item}</td>
+          <td class="num">${line.qty}</td>
+          <td class="num">${line.size}</td>
+          <td class="num">${money(increasedPrice(line.cost))}</td>
+        </tr>
+      `).join("") + `
+        <tr>
+          <td><strong>Total Frame</strong></td>
+          <td class="num"></td>
+          <td class="num"></td>
+          <td class="num"><strong>${money(increasedPrice(result.framePrice))}</strong></td>
+        </tr>
+      `;
+
+      const buttons = [
+        { label: "Add Cube Frame To Cart", code: DATA.frameQcode, url: result.frameUrl },
+        ...result.inserts.map((item) => ({ label: `Add ${item.label}`, code: item.material.qcode, url: insertUrl(item), className: "secondary" })).filter((button) => button.url),
+        {
+          label: "Add All, (Frame and Graphics) to Cart",
+          code: "Bundle",
+          urls: [result.frameUrl, ...result.inserts.map(insertUrl).filter(Boolean)],
+          className: "combo"
+        }
+      ];
+      $("cartButtons").innerHTML = buttons.map((button) =>
+        `<button class="cart-button ${button.className || ""}" type="button" ${button.urls ? `data-bundle="${encode(JSON.stringify(button.urls))}"` : `data-url="${encode(button.url)}"`}><span>${button.label}</span><small>${button.code}</small></button>`
+      ).join("");
+      $("selectedUrl").value = result.frameUrl;
+      renderDiagram(result);
+    }
+
+    function openCartUrlsSequentially(urls) {
+      const queue = urls.filter(Boolean);
+      if (!queue.length) return;
+      const cartTab = window.open(queue[0], "_blank");
+      if (!cartTab) return;
+      queue.slice(1).forEach((url, index) => {
+        window.setTimeout(() => {
+          if (!cartTab.closed) {
+            cartTab.location.href = url;
+            cartTab.focus();
+          }
+        }, (index + 1) * 2500);
+      });
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest(".cart-button");
+      if (!button) return;
+      if (button.dataset.bundle) {
+        const urls = JSON.parse(decodeURIComponent(button.dataset.bundle));
+        $("selectedUrl").value = urls.join("\n");
+        openCartUrlsSequentially(urls);
+        return;
+      }
+      const url = decodeURIComponent(button.dataset.url);
+      $("selectedUrl").value = url;
+      window.open(url, "_blank");
+    });
+
+    function handleEdit(event) {
+      if (event.target.matches("#width, #depth, #height")) {
+        saveSharedFrameDimensions();
+      }
+      if (event.target.matches("select")) {
+        saveFormState();
+      }
+      render();
+    }
+
+    document.addEventListener("input", handleEdit);
+    document.addEventListener("change", handleEdit);
+    document.querySelectorAll(".app-tabs a").forEach((link) => {
+      link.addEventListener("click", () => {
+        saveFormState();
+        saveSharedFrameDimensions();
+      });
+    });
+    init();
+    restoreFormState();
+    restoreSharedFrameDimensions();
+    saveSharedFrameDimensions();
+    render();
+  </script>
+</body>
+</html>

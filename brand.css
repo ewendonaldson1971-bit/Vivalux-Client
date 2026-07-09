@@ -1,0 +1,132 @@
+:root {
+  --ink: #2f3336;
+  --muted: #53565a;
+  --line: #d9dde1;
+  --line-strong: #aeb4ba;
+  --paper: #f7f8fa;
+  --panel: #ffffff;
+  --field: #fff7b8;
+  --field-focus: #ffef6a;
+  --accent: #e4002b;
+  --accent-dark: #aa001f;
+  --blue: #53565a;
+  --rose: #e4002b;
+  --shadow: 0 16px 36px rgba(47, 51, 54, 0.12);
+  --radius: 8px;
+}
+
+body {
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(83, 86, 90, 0.06) 0 1px, transparent 1px 100%),
+    linear-gradient(0deg, rgba(83, 86, 90, 0.05) 0 1px, transparent 1px 100%),
+    var(--paper);
+  font-family: "Open Sans", "Cabin", Arial, Helvetica, sans-serif;
+}
+
+h1,
+.section-title,
+.panel-head h2,
+.panel h2,
+.actions h2,
+.actions-panel h2 {
+  color: #53565a;
+  font-family: "Cabin", "Open Sans", Arial, Helvetica, sans-serif;
+  font-weight: 800;
+}
+
+h1 {
+  letter-spacing: 0;
+}
+
+.brand-logo {
+  max-width: 190px;
+}
+
+.app-tabs {
+  background: rgba(255, 255, 255, 0.98);
+  border-bottom: 3px solid #e4002b;
+}
+
+.app-tabs a {
+  border-color: #d9dde1;
+  color: #53565a;
+}
+
+.app-tabs a:hover,
+.app-tabs a.active {
+  border-color: #e4002b;
+  background: #fff1f3;
+  color: #e4002b;
+}
+
+.status,
+.pill {
+  border-color: #e4002b;
+  background: #fff1f3;
+  color: #e4002b;
+}
+
+.metric,
+.panel,
+.actions,
+.actions-panel {
+  border-color: #d9dde1;
+  box-shadow: var(--shadow);
+}
+
+.metric span,
+label,
+.field span {
+  color: #53565a;
+}
+
+.metric strong {
+  color: #2f3336;
+}
+
+.cart-button,
+.button,
+.plain-button {
+  background: #e4002b;
+  border-color: #aa001f;
+}
+
+.cart-button:hover,
+.button:hover,
+.plain-button:hover {
+  background: #aa001f;
+}
+
+.cart-button.secondary,
+.button.secondary {
+  background: #53565a;
+  border-color: #3f4246;
+}
+
+.cart-button.secondary:hover,
+.button.secondary:hover {
+  background: #3f4246;
+}
+
+.cart-button.rose,
+.button.rose,
+.button.combo,
+.cart-button.combo {
+  background: #e4002b;
+  border-color: #aa001f;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #e4002b;
+  box-shadow: 0 0 0 3px rgba(228, 0, 43, 0.12);
+}
+
+.lightbox,
+.diagram-wrap {
+  background:
+    linear-gradient(135deg, rgba(194, 220, 249, 0.32), rgba(255, 255, 255, 0.86)),
+    #ffffff;
+}

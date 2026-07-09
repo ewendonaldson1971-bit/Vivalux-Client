@@ -1,0 +1,1379 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vivtrack 4 Builder</title>
+  <style>
+    :root {
+      --ink: #18211f;
+      --muted: #63706c;
+      --line: #d8dedb;
+      --paper: #fbfcfb;
+      --panel: #ffffff;
+      --field: #fff7b8;
+      --field-focus: #ffef6a;
+      --accent: #007a5f;
+      --accent-dark: #005742;
+      --blue: #225b82;
+      --rose: #ad3f56;
+      --shadow: 0 16px 38px rgba(27, 42, 38, 0.11);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(0, 122, 95, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(0, 122, 95, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 42px 42px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea, output { font: inherit; }
+    a { color: inherit; }
+
+    .app-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(24, 33, 31, 0.08);
+    }
+
+    .app-tabs a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .app-tabs a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .app {
+      min-height: calc(100vh - 61px);
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.93);
+      border-right: 1px solid var(--line);
+      box-shadow: 10px 0 28px rgba(24, 33, 31, 0.05);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .brand-logo {
+      display: block;
+      width: min(210px, 70%);
+      height: auto;
+      margin: 0 0 16px;
+    }
+
+    .mast {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #eef8f4;
+      color: var(--accent-dark);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0, 122, 95, 0.12);
+    }
+
+    .page-switch {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+
+    .page-switch a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .page-switch a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .section {
+      margin-bottom: 22px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      color: #34413d;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    input, select, output, textarea {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #c8b94a;
+      border-radius: var(--radius);
+      background: var(--field);
+      color: var(--ink);
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    output {
+      display: flex;
+      align-items: center;
+      font-weight: 800;
+      background: #fffbe3;
+    }
+
+    textarea {
+      min-height: 210px;
+      resize: vertical;
+      line-height: 1.45;
+      background: #fffbe3;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      background: var(--field-focus);
+      border-color: #8d7e00;
+      box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.25);
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 10px;
+      background: var(--field);
+      border: 1px solid #c8b94a;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric, .panel, .actions {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .left-stack, .right-stack {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel { padding: 18px; }
+
+    .panel h2, .actions h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .diagram-wrap {
+      display: grid;
+      place-items: center;
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f4f7f6;
+      overflow: hidden;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      max-height: 72vh;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table th, .table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .table .num {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .actions {
+      padding: 18px;
+    }
+
+    .button-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cart-button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 54px;
+      border: 1px solid var(--accent-dark);
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      padding: 11px 12px;
+      box-shadow: 0 8px 18px rgba(0, 122, 95, 0.18);
+    }
+
+    .cart-button:hover { background: var(--accent-dark); }
+
+    .cart-button span {
+      min-width: 0;
+      font-weight: 800;
+    }
+
+    .cart-button small {
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 11px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .cart-button.secondary {
+      background: var(--blue);
+      border-color: #18435f;
+      box-shadow: 0 8px 18px rgba(34, 91, 130, 0.18);
+    }
+
+    .cart-button.secondary:hover { background: #18435f; }
+
+    .cart-button.combo {
+      background: #000000;
+      border-color: #000000;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    .cart-button.combo:hover { background: #171717; }
+
+    .url-box {
+      margin-top: 12px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      min-height: 82px;
+    }
+
+    #description {
+      min-height: 210px;
+      border-color: var(--line-strong);
+      background: #ffffff;
+      color: #26322f;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .warning {
+      display: none;
+      margin: 0 0 14px;
+      padding: 12px 14px;
+      border: 1px solid #e3b240;
+      border-radius: var(--radius);
+      background: #fff5d6;
+      color: #674800;
+      font-weight: 800;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .warning.show { display: block; }
+
+    .empty-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .summary-grid, .workspace { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .app-tabs {
+        grid-template-columns: 1fr;
+        padding: 8px 16px;
+      }
+
+      .sidebar, .main { padding: 16px; }
+      .mast, .grid, .button-grid { grid-template-columns: 1fr; }
+      .mast { display: grid; }
+      .summary-grid { gap: 10px; }
+    }
+  </style>
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js"></script>
+</head>
+<body>
+  <nav class="app-tabs" aria-label="Application pages">
+    <a href="index.html" data-size-link>Backlit</a>
+    <a class="active" href="edgelit.html" data-size-link>Edgelit</a>
+    <a href="r300/index.html">R300</a>
+    <a href="palisade.html">Palisade</a>
+    <a href="cube.html">Cube</a>
+    <a href="https://vivad.com.au/shopping-cart">Go to Cart</a>
+  </nav>
+  <div class="app">
+    <aside class="sidebar">
+      <img class="brand-logo" src="vivad-logo.png" alt="Vivad">
+      <div class="mast">
+        <div>
+          <h1>Vivtrack 4 Builder</h1>
+        </div>
+        <div class="status">Live</div>
+      </div>
+      <form id="configForm">
+        <section class="section">
+          <h2 class="section-title">Quote Inputs</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="shortName">Short Name</label>
+              <input id="shortName" name="shortName" value="">
+            </div>
+            <div class="field">
+              <label for="quantity">QTY</label>
+              <input id="quantity" name="quantity" type="number" min="1" step="1" value="1">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Lightbox</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="width">Width mm</label>
+              <input id="width" name="width" type="number" min="100" step="1" value="1000">
+            </div>
+            <div class="field">
+              <label for="height">Height mm</label>
+              <input id="height" name="height" type="number" min="100" step="1" value="2000">
+            </div>
+            <div class="field full">
+              <label for="extrusion">Type of Extrusion</label>
+              <select id="extrusion" name="extrusion"></select>
+            </div>
+            <div class="field full">
+              <label for="packingLength">Maximum Packing Length</label>
+              <select id="packingLength" name="packingLength"></select>
+            </div>
+            <div class="field">
+              <label for="sides">Sides</label>
+              <select id="sides" name="sides">
+                <option>Single Sided</option>
+                <option selected>Double Sided</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="lighting">Lighting</label>
+              <select id="lighting" name="lighting"></select>
+            </div>
+            <div class="field full">
+              <label for="includeFeet">Include two Feet</label>
+              <label class="toggle">
+                <input id="includeFeet" name="includeFeet" type="checkbox">
+                Enabled
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Finish</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="powderCoating">Powder Coating</label>
+              <label class="toggle">
+                <input id="powderCoating" name="powderCoating" type="checkbox">
+                Enabled
+              </label>
+            </div>
+            <div class="field">
+              <label for="colour">Colour</label>
+              <select id="colour" name="colour">
+                <option>Clear Anodised</option>
+                <option>Black</option>
+                <option>White</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field full" id="otherColourField" hidden>
+              <label for="otherColour">Other Colour</label>
+              <input id="otherColour" name="otherColour" placeholder="Enter colour">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Power Supplies and Leads</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="powerSupplyType">Power Supply</label>
+              <select id="powerSupplyType" name="powerSupplyType">
+                <option value="Internal" selected>Internal Power Supplies</option>
+                <option value="External">External Power Supplies</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="powerLeadQty">QTY of Leads</label>
+              <output id="powerLeadQty">0</output>
+            </div>
+            <div class="field full">
+              <label for="exitLeadFrom">Exit Lead from</label>
+              <select id="exitLeadFrom" name="exitLeadFrom">
+                <option>TBA</option>
+                <option>Not Important</option>
+                <option>Rear of extrusion</option>
+                <option>Side of Extrusion</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="leadLocation">Location</label>
+              <select id="leadLocation" name="leadLocation">
+                <option>TBA</option>
+                <option>Not Important</option>
+                <option>Top Left</option>
+                <option>Top Middle</option>
+                <option>Top Right</option>
+                <option>Middle Left</option>
+                <option>Middle Right</option>
+                <option>Bottom Left</option>
+                <option>Bottom Middle</option>
+                <option>Bottom Right</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Skin</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="skin">Skin Option</label>
+              <select id="skin" name="skin"></select>
+            </div>
+            <div class="field">
+              <label for="skinPrice">Skin Price</label>
+              <output id="skinPrice">$0</output>
+            </div>
+            <div class="field">
+              <label for="bouncePrice">Bounce Cloth</label>
+              <output id="bouncePrice">$0</output>
+            </div>
+            <div class="field">
+              <label for="skinQty">Skins Required</label>
+              <output id="skinQty">0</output>
+            </div>
+            <div class="field">
+              <label for="bounceQty">Bounce Cloths Required</label>
+              <output id="bounceQty">0</output>
+            </div>
+          </div>
+        </section>
+      </form>
+    </aside>
+
+    <main class="main">
+      <section class="summary-grid" aria-label="Summary">
+        <div class="metric">
+          <span>Lightbox Price</span>
+          <strong id="boxPrice">$0</strong>
+          <small>Frame, LEDs, power, feet, labour and sundries.</small>
+        </div>
+        <div class="metric">
+          <span>Graphics Price</span>
+          <strong id="unitCost">$0</strong>
+          <small id="unitCostNote">Selected skins and bounce cloth.</small>
+        </div>
+        <div class="metric">
+          <span>Total Ex GST Price</span>
+          <strong id="totalCost">$0</strong>
+          <small id="totalNote">Lightbox + graphics.</small>
+        </div>
+        <div class="metric">
+          <span>Power</span>
+          <strong id="powerWatts">0 W</strong>
+          <small><span id="powerDensity">0 W/m2</span> · <span id="ledSummary">No LEDs</span><br><span id="averageLuminance">Average Luminance: 0 Nits cd/m2</span></small>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="left-stack">
+          <div class="panel">
+            <h2>Layout</h2>
+            <div class="diagram-wrap" id="diagram"></div>
+          </div>
+
+          <div class="panel" hidden>
+            <h2>Cost Components</h2>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="num">Qty</th>
+                  <th class="num">Length / Size</th>
+                  <th class="num">Cost</th>
+                </tr>
+              </thead>
+              <tbody id="costComponents"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="right-stack">
+          <section class="actions">
+            <h2>Cart Links</h2>
+            <div class="button-grid" id="cartButtons"></div>
+            <textarea class="url-box" id="selectedUrl" readonly></textarea>
+          </section>
+
+          <section class="panel">
+            <h2>Description</h2>
+            <textarea id="description" readonly></textarea>
+          </section>
+
+          <section class="panel">
+            <h2>Warnings</h2>
+            <div id="warnings"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DATA = {
+      margin: 2.4,
+      boxQcode: "Q105242-01",
+      bounceQcode: "Q54823-07",
+      joinerCost: 1.5,
+      joinerKg: 0.12,
+      tensionLockCost: 7.5,
+      tensionLockKg: 0.052,
+      hBraceCostPerM: 6.95,
+      hBraceKgPerM: 0.638,
+      hBraceWidth: 40,
+      hBracePanelSpan: 2440,
+      luminanceLumensPerWatt: 101,
+      luminanceDivisor: 3.142,
+      luminanceEfficiencyByDepth: { 50: 0.34, 80: 0.27, 100: 0.235 },
+      skins: [
+        { name: "Fortuna DyeSub", qcode: "Q54823-03", rate: 65 },
+        { name: "Polarlight UV", qcode: "Q54823-09", rate: 65 },
+        { name: "Oversize UV Gleam", qcode: "Q118020-15", rate: 65 }
+      ],
+      packingLengths: [
+        { name: "A Pipe Rack 5.6M", metres: 5.6 },
+        { name: "B LWB 3M", metres: 3 },
+        { name: "C Van/Tray 2.5M", metres: 2.5 },
+        { name: "D Car 1.5M", metres: 1.5 }
+      ],
+      extrusions: [
+        { name: "Vivalux 80mm SS Aluminium Extrusion ", code: 3, lightAllowance: 9, compAllowance: 47, braceAllowance: 55, costPerM: 18, weightPerM: 1335, backOffset: 39, xArea: 0.0044, joinersPerJoin: 2, luminanceEfficiency: 0.27 },
+        { name: "Vivalux  100mm DS Aluminium Extrusion", code: 2, lightAllowance: 13, compAllowance: 4.8, braceAllowance: 10, costPerM: 17, weightPerM: 1437, backOffset: 0, xArea: 0.003, joinersPerJoin: 2, luminanceEfficiency: 0.235 },
+        { name: "Vivalux  100mm  SS Aluminium Extrusion", code: 1, lightAllowance: 9, compAllowance: 47, braceAllowance: 55, costPerM: 21, weightPerM: 1763, backOffset: 0, xArea: 0.0055, joinersPerJoin: 2, luminanceEfficiency: 0.235 }
+      ],
+      lightingOptions: [
+        { label: "0 None", edges: [] },
+        { label: "1 Edge lit Sides only", edges: ["left", "right"] },
+        { label: "2 Edge lit Top and Bottom only ", edges: ["top", "bottom"] },
+        { label: "3 Edgelit all Four sides", edges: ["top", "right", "bottom", "left"] },
+        { label: "4 Edgelit Top Only", edges: ["top"] },
+        { label: "5 Edgelit Bottom Only", edges: ["bottom"] },
+        { label: "6 Edgelit Left Only", edges: ["left"] },
+        { label: "7 Edgelit Right Only", edges: ["right"] }
+      ],
+      leds: {
+        six: { label: "6Up-438cm-15.6W", units: 6, watts: 15.6, cost: 13.34, multiplier: 1.89, weight: 100 },
+        five: { label: "5Up-365cm-13.5W", units: 5, watts: 13.5, cost: 11.88, multiplier: 1.89, weight: 40 },
+        three: { label: "3Up-219cm-8.2W", units: 3, watts: 8.2, cost: 8.86, multiplier: 1.89, weight: 40 }
+      },
+      power: {
+        Internal: { label: "60W 24V Internal Power Supply", limit: 48, cost: 16.57, weight: 1150 },
+        External: { label: "HLG-185-24A 185W External Power Supply", limit: 185, cost: 94, weight: 1150 }
+      }
+    };
+
+    const SHARED_SIZE_KEY = "vivalux-lightbox-shared-size-1000x2000";
+    const FORM_STATE_KEY = "vivalux-edgelit-form-state";
+    const $ = (id) => document.getElementById(id);
+    const PRICE_MULTIPLIER = 1.4285714;
+    const money = (value) => `$${Math.round(value).toLocaleString("en-AU")}`;
+    const money2 = (value) => `$${(Number.isFinite(value) ? value : 0).toLocaleString("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    const qty = (value) => (Number.isInteger(value) ? value.toLocaleString("en-AU") : (Number.isFinite(value) ? value.toLocaleString("en-AU", { maximumFractionDigits: 2 }) : "0"));
+    const mm = (value) => `${Math.round(value).toLocaleString("en-AU")} mm`;
+    const cm = (value) => `${Math.round(value).toLocaleString("en-AU")} cm`;
+    const encode = encodeURIComponent;
+
+    function increasedPrice(value) {
+      const number = Number(value);
+      const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
+      return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+    }
+
+    function initSelects() {
+      $("packingLength").innerHTML = DATA.packingLengths.map((item) =>
+        `<option value="${item.name}" ${item.name === "B LWB 3M" ? "selected" : ""}>${item.name}</option>`
+      ).join("");
+      $("extrusion").innerHTML = DATA.extrusions.map((item) =>
+        `<option value="${item.name}" ${item.code === 3 ? "selected" : ""}>${item.name}</option>`
+      ).join("");
+      $("lighting").innerHTML = DATA.lightingOptions.map((item) =>
+        `<option value="${item.label}" ${item.label === "2 Edge lit Top and Bottom only " ? "selected" : ""}>${item.label}</option>`
+      ).join("");
+      $("skin").innerHTML = DATA.skins.map((item) =>
+        `<option value="${item.qcode}">${item.name}</option>`
+      ).join("");
+    }
+
+    function saveFormState() {
+      try {
+        const state = {};
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          state[el.name || el.id] = el.value;
+        });
+        localStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+    }
+
+    function restoreFormState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(FORM_STATE_KEY) || "{}");
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          const key = el.name || el.id;
+          if (Object.prototype.hasOwnProperty.call(state, key)) {
+            el.value = state[key];
+          }
+        });
+      } catch {
+        /* Ignore malformed saved state. */
+      }
+    }
+
+    function sharedSizeFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      const width = Number(params.get("width"));
+      const height = Number(params.get("height"));
+      return Number.isFinite(width) && Number.isFinite(height) && width >= 100 && height >= 100
+        ? { width, height }
+        : null;
+    }
+
+    function loadSharedSize() {
+      let size = sharedSizeFromUrl();
+      if (!size) {
+        try {
+          size = JSON.parse(localStorage.getItem(SHARED_SIZE_KEY) || "null");
+        } catch {
+          size = null;
+        }
+      }
+      if (!size || !Number.isFinite(size.width) || !Number.isFinite(size.height)) return;
+      $("width").value = Math.round(Math.max(100, size.width));
+      $("height").value = Math.round(Math.max(100, size.height));
+    }
+
+    function storeSharedSize(saveToStorage = true) {
+      const width = Math.max(100, Number($("width").value) || 1000);
+      const height = Math.max(100, Number($("height").value) || 2000);
+      if (saveToStorage) {
+        try {
+          localStorage.setItem(SHARED_SIZE_KEY, JSON.stringify({ width, height }));
+        } catch {}
+      }
+      document.querySelectorAll(".app-tabs a[data-size-link], .page-switch a").forEach((link) => {
+        const base = link.getAttribute("href").split("?")[0];
+        link.href = `${base}?width=${encodeURIComponent(Math.round(width))}&height=${encodeURIComponent(Math.round(height))}`;
+      });
+    }
+
+    function getConfig() {
+      const powder = $("powderCoating").checked;
+      const colour = powder ? ($("colour").value === "Other" ? $("otherColour").value.trim() || "Other" : $("colour").value) : "Clear Anodised";
+      return {
+        shortName: $("shortName").value.trim(),
+        quantity: Math.max(1, Math.round(Number($("quantity").value) || 1)),
+        margin: DATA.margin,
+        width: Math.max(100, Number($("width").value) || 1000),
+        height: Math.max(100, Number($("height").value) || 2000),
+        packing: DATA.packingLengths.find((item) => item.name === $("packingLength").value),
+        extrusion: DATA.extrusions.find((item) => item.name === $("extrusion").value),
+        sides: $("sides").value,
+        lighting: DATA.lightingOptions.find((item) => item.label === $("lighting").value),
+        includeFeet: $("includeFeet").checked,
+        powder,
+        colour,
+        powerType: $("powerSupplyType").value,
+        exitLeadFrom: $("exitLeadFrom").value || "TBA",
+        leadLocation: $("leadLocation").value || "TBA",
+        skin: DATA.skins.find((item) => item.qcode === $("skin").value)
+      };
+    }
+
+    function composeModules(unitCount) {
+      const n = Math.max(0, Math.floor(unitCount));
+      if (n < 3) return { six: 0, five: 0, three: 0 };
+      if (n > 20) {
+        let six = n % 5;
+        let five = Math.floor(n / 5) - six;
+        if (five >= 0) return { six, five, three: 0 };
+      }
+
+      let best = null;
+      for (let six = 0; six <= Math.floor(n / 6); six += 1) {
+        for (let five = 0; five <= Math.floor(n / 5); five += 1) {
+          for (let three = 0; three <= Math.floor(n / 3); three += 1) {
+            if (six * 6 + five * 5 + three * 3 !== n) continue;
+            const modules = six + five + three;
+            const score = modules * 100 - six * 10 - five;
+            if (!best || score < best.score) best = { six, five, three, score };
+          }
+        }
+      }
+      return best ? { six: best.six, five: best.five, three: best.three } : composeModules(n - 1);
+    }
+
+    function addCounts(a, b) {
+      return { six: a.six + b.six, five: a.five + b.five, three: a.three + b.three };
+    }
+
+    function braceLayout(width, height, extrusion) {
+      const verticalBraceQty = Math.max(0, Math.ceil(width / DATA.hBracePanelSpan) - 1);
+      const horizontalBraceRows = Math.max(0, Math.ceil(height / DATA.hBracePanelSpan) - 1);
+      const horizontalSegmentsPerRow = verticalBraceQty + 1;
+      const horizontalBraceQty = horizontalBraceRows * horizontalSegmentsPerRow;
+      const verticalBraceLength = Math.max(0, height - 2 * extrusion.braceAllowance);
+      const clearVerticalRun = Math.max(0, height - 2 * extrusion.braceAllowance - horizontalBraceRows * DATA.hBraceWidth);
+      const verticalSegmentLength = horizontalBraceRows ? clearVerticalRun / (horizontalBraceRows + 1) : 0;
+      const clearHorizontalRun = Math.max(0, width - 2 * extrusion.braceAllowance - verticalBraceQty * DATA.hBraceWidth);
+      const horizontalBraceLength = horizontalBraceRows || verticalBraceQty ? clearHorizontalRun / horizontalSegmentsPerRow : 0;
+      return {
+        verticalBraceQty,
+        horizontalBraceRows,
+        horizontalSegmentsPerRow,
+        horizontalBraceQty,
+        verticalBraceLength,
+        verticalSegmentLength,
+        horizontalBraceLength
+      };
+    }
+
+    function frameSplit(lengthMm, packing) {
+      const maxLength = Math.max(1, (packing?.metres || 3) * 1000);
+      const joins = Math.max(0, Math.ceil(lengthMm / maxLength) - 1);
+      const sections = joins + 1;
+      return {
+        joins,
+        sections,
+        sectionLength: lengthMm / sections
+      };
+    }
+
+    function luminanceEfficiency(extrusion) {
+      if (Number.isFinite(extrusion.luminanceEfficiency)) return extrusion.luminanceEfficiency;
+      const depth = Number(extrusion.name.match(/(\d+(?:\.\d+)?)\s*mm/i)?.[1]);
+      return DATA.luminanceEfficiencyByDepth[depth] || 0;
+    }
+
+    function calculate(cfg) {
+      const area = cfg.width * cfg.height / 1000000;
+      const perimeter = 2 * (cfg.width + cfg.height) / 1000;
+      const braces = braceLayout(cfg.width, cfg.height, cfg.extrusion);
+      const isDs100 = cfg.extrusion.code === 2;
+      const horizontalLedBraceDeduction = isDs100 ? braces.verticalBraceQty * DATA.hBraceWidth : 0;
+      const verticalLedBraceDeduction = isDs100 ? braces.horizontalBraceRows * DATA.hBraceWidth : 0;
+      const litWidth = Math.max(0, cfg.width - 2 * cfg.extrusion.lightAllowance);
+      const litHeight = Math.max(0, cfg.height - 2 * cfg.extrusion.lightAllowance);
+      const edgeUnits = {
+        top: Math.floor(Math.max(0, litWidth - horizontalLedBraceDeduction) / 73),
+        bottom: Math.floor(Math.max(0, litWidth - horizontalLedBraceDeduction) / 73),
+        left: Math.floor(Math.max(0, litHeight - verticalLedBraceDeduction) / 73),
+        right: Math.floor(Math.max(0, litHeight - verticalLedBraceDeduction) / 73)
+      };
+      let ledCounts = { six: 0, five: 0, three: 0 };
+      cfg.lighting.edges.forEach((edge) => {
+        ledCounts = addCounts(ledCounts, composeModules(edgeUnits[edge]));
+      });
+
+      const ledCost = Object.entries(ledCounts).reduce((total, [key, qty]) => total + qty * DATA.leds[key].cost * DATA.leds[key].multiplier, 0);
+      const ledWeight = Object.entries(ledCounts).reduce((total, [key, qty]) => total + qty * DATA.leds[key].weight, 0);
+      const totalPower = Object.entries(ledCounts).reduce((total, [key, qty]) => total + qty * DATA.leds[key].watts, 0);
+      const averageLuminance = area ? totalPower * DATA.luminanceLumensPerWatt * luminanceEfficiency(cfg.extrusion) / (DATA.luminanceDivisor * area) : 0;
+      const powerSpec = DATA.power[cfg.powerType];
+      const powerQty = totalPower > 0 ? Math.ceil(totalPower / powerSpec.limit) : 0;
+      const powerDensity = area ? totalPower / area : 0;
+      const powerLeadQty = powerQty ? (cfg.powerType === "External" ? powerQty : Math.ceil(powerQty / 6)) : 0;
+      const powerCost = powerQty * powerSpec.cost;
+      const powerWeight = powerQty * powerSpec.weight;
+
+      const topBottomSplit = frameSplit(cfg.width, cfg.packing);
+      const sideSplit = frameSplit(cfg.height, cfg.packing);
+      const topBottomQty = 2 * topBottomSplit.sections;
+      const sideQty = 2 * sideSplit.sections;
+      const joinerQty = (topBottomSplit.joins + sideSplit.joins) * (cfg.extrusion.joinersPerJoin || 0) * 2;
+      const joinerCost = joinerQty * DATA.joinerCost;
+      const joinerWeight = joinerQty * DATA.joinerKg * 1000;
+      const topBottomCost = cfg.extrusion.costPerM * cfg.width / 1000 * 2;
+      const sideCost = cfg.extrusion.costPerM * cfg.height / 1000 * 2;
+      const topBottomWeight = cfg.extrusion.weightPerM * cfg.width / 1000 * 2;
+      const sideWeight = cfg.extrusion.weightPerM * cfg.height / 1000 * 2;
+      const { verticalBraceQty, horizontalBraceRows, horizontalBraceQty, verticalBraceLength, horizontalBraceLength } = braces;
+      const verticalBraceM = verticalBraceQty * verticalBraceLength / 1000;
+      const horizontalBraceM = horizontalBraceQty * horizontalBraceLength / 1000;
+      const hBraceM = verticalBraceM + horizontalBraceM;
+      const hBraceCost = hBraceM * DATA.hBraceCostPerM;
+      const hBraceWeight = hBraceM * DATA.hBraceKgPerM * 1000;
+      const tensionLockQty = (verticalBraceQty + horizontalBraceQty) * 2;
+      const tensionLockCost = tensionLockQty * DATA.tensionLockCost;
+      const tensionLockWeight = tensionLockQty * DATA.tensionLockKg * 1000;
+      const cornerCost = 8 * 1.5;
+      const cornerWeight = 8 * 40;
+      const feetCost = cfg.includeFeet ? 64.62 : 0;
+      const powderCost = cfg.powder ? perimeter * 10 : 0;
+      const labourCost = cfg.lighting.edges.length ? perimeter * 0.2 * 45 : area * 45;
+      const wireCost = perimeter * 5;
+      const rawCost = topBottomCost + sideCost + joinerCost + cornerCost + hBraceCost + tensionLockCost + ledCost + powerCost + feetCost + powderCost + labourCost + wireCost;
+      const margin = Number.isFinite(cfg.margin) ? cfg.margin : DATA.margin;
+      const boxPrice = Math.ceil(rawCost * margin);
+
+      const isDoubleSided = cfg.sides === "Double Sided";
+      const skinQtyPerBox = isDoubleSided ? 2 : 1;
+      const bounceQtyPerBox = isDoubleSided ? 0 : 1;
+      const skinQtyTotal = skinQtyPerBox * cfg.quantity;
+      const bounceQtyTotal = bounceQtyPerBox * cfg.quantity;
+      const skinPrice = cfg.skin.rate * area * skinQtyPerBox;
+      const bounceWidth = Math.max(0, cfg.width - 2 * cfg.extrusion.backOffset);
+      const bounceHeight = Math.max(0, cfg.height - 2 * cfg.extrusion.backOffset);
+      const bouncePrice = bounceWidth * bounceHeight * 25 / 1000000 * bounceQtyPerBox;
+      const unitCost = boxPrice + skinPrice + bouncePrice;
+      const totalInc = unitCost * cfg.quantity * 1.1;
+
+      const physicalWeightKg = Math.round((topBottomWeight + sideWeight + joinerWeight + hBraceWeight + tensionLockWeight + cornerWeight + ledWeight + powerWeight) / 1000);
+      const packLengthCm = Math.ceil(Math.max(topBottomSplit.sectionLength, sideSplit.sectionLength) / 10);
+      const packAreaVolume = ((topBottomWeight + sideWeight) * cfg.extrusion.xArea / Math.max(cfg.extrusion.weightPerM, 1)) || 0.02;
+      const packCrossCm = Math.max(12, Math.round(Math.sqrt(packAreaVolume * 1.2 / Math.max(packLengthCm / 100, 1)) * 100));
+      const moduleLines = [
+        { item: "SALED 6 Up", qty: ledCounts.six, size: DATA.leds.six.label, cost: ledCounts.six * DATA.leds.six.cost * DATA.leds.six.multiplier },
+        { item: "SALED 5 Up", qty: ledCounts.five, size: DATA.leds.five.label, cost: ledCounts.five * DATA.leds.five.cost * DATA.leds.five.multiplier },
+        { item: "SALED 3 Up", qty: ledCounts.three, size: DATA.leds.three.label, cost: ledCounts.three * DATA.leds.three.cost * DATA.leds.three.multiplier }
+      ].filter((line) => line.qty > 0);
+
+      return {
+        area,
+        perimeter,
+        litWidth,
+        litHeight,
+        ledCounts,
+        totalPower,
+        averageLuminance,
+        powerQty,
+        powerSpec,
+        rawCost,
+        boxPrice,
+        skinQtyPerBox,
+        bounceQtyPerBox,
+        skinQtyTotal,
+        bounceQtyTotal,
+        skinPrice,
+        bounceWidth,
+        bounceHeight,
+        bouncePrice,
+        unitCost,
+        totalInc,
+        weightKg: physicalWeightKg,
+        packingLengthCm: packLengthCm,
+        packingWidthCm: packCrossCm,
+        packingHeightCm: packCrossCm,
+        powerLeadQty,
+        powerDensity,
+        topBottomQty,
+        sideQty,
+        topBottomSectionLength: topBottomSplit.sectionLength,
+        sideSectionLength: sideSplit.sectionLength,
+        frameJoinsWidth: topBottomSplit.joins,
+        frameJoinsHeight: sideSplit.joins,
+        joinerQty,
+        verticalBraceQty,
+        horizontalBraceRows,
+        horizontalSegmentsPerRow: braces.horizontalSegmentsPerRow,
+        horizontalBraceQty,
+        verticalBraceLength,
+        verticalSegmentLength: braces.verticalSegmentLength,
+        horizontalBraceLength,
+        tensionLockQty,
+        costComponents: [
+          { item: `${cfg.extrusion.name} for T and B`, qty: topBottomQty, size: mm(topBottomSplit.sectionLength), cost: topBottomCost },
+          { item: `${cfg.extrusion.name} for sides`, qty: sideQty, size: mm(sideSplit.sectionLength), cost: sideCost },
+          { item: "Frame joiners", qty: joinerQty, size: "each", cost: joinerCost },
+          { item: "H-Brace for vertical", qty: verticalBraceQty, size: mm(verticalBraceLength), cost: verticalBraceM * DATA.hBraceCostPerM },
+          { item: "H-Brace for horizontal", qty: horizontalBraceQty, size: mm(horizontalBraceLength), cost: horizontalBraceM * DATA.hBraceCostPerM },
+          { item: "Tension Locks", qty: tensionLockQty, size: "each", cost: tensionLockCost },
+          { item: "Corners", qty: 8, size: "each", cost: cornerCost },
+          ...moduleLines,
+          { item: powerSpec.label, qty: powerQty, size: cfg.powerType.toLowerCase(), cost: powerCost },
+          { item: "Power Leads", qty: powerLeadQty, size: `${cfg.exitLeadFrom || "TBA"}, ${cfg.leadLocation || "TBA"}`, cost: 0 },
+          { item: "Hours", qty: cfg.lighting.edges.length ? perimeter * 0.2 : area, size: "$45 / hr", cost: labourCost },
+          { item: "Wire and Sunderies", qty: perimeter, size: "$5 each", cost: wireCost },
+          { item: `${cfg.colour} Powder Coating of frame`, qty: cfg.powder ? 1 : 0, size: cfg.colour, cost: powderCost },
+          { item: "Pair of Feet", qty: cfg.includeFeet ? 1 : 0, size: "pair", cost: feetCost }
+        ].filter((line) => line.qty > 0),
+        lines: [
+          ["Box Size", `${mm(cfg.width)} (w) x ${mm(cfg.height)} (h)`],
+          ["Extrusion", cfg.extrusion.name],
+          ["Frame Sections", `${topBottomQty} @ ${mm(topBottomSplit.sectionLength)} T/B, ${sideQty} @ ${mm(sideSplit.sectionLength)} sides`],
+          ["Frame Joiners", joinerQty ? `QTY ${joinerQty}` : "None"],
+          ["Lighting", cfg.lighting.label.replace(/^\d+\s*/, "")],
+          ["Lit Lengths", `${mm(litWidth)} horizontal, ${mm(litHeight)} vertical`],
+          ["Vertical H-Braces", verticalBraceQty ? `${verticalBraceQty} @ ${mm(verticalBraceLength)}` : "None"],
+          ["Horizontal H-Braces", horizontalBraceQty ? `${horizontalBraceQty} @ ${mm(horizontalBraceLength)}` : "None"],
+          ["Power Supplies", `QTY ${powerQty} ${powerSpec.label}`],
+          ["Power Leads", `QTY ${powerLeadQty} - ${cfg.exitLeadFrom || "TBA"}, ${cfg.leadLocation || "TBA"}`],
+          ["Packing", `${cm(packLengthCm)} x ${cm(packCrossCm)} x ${cm(packCrossCm)}, ${physicalWeightKg} Kg`]
+        ]
+      };
+    }
+
+    function ledDescription(calc) {
+      const parts = [];
+      if (calc.ledCounts.six) parts.push(`QTY: ${calc.ledCounts.six} off ${DATA.leds.six.label}`);
+      if (calc.ledCounts.five) parts.push(`QTY: ${calc.ledCounts.five} off ${DATA.leds.five.label}`);
+      if (calc.ledCounts.three) parts.push(`QTY: ${calc.ledCounts.three} off ${DATA.leds.three.label}`);
+      return parts.length ? parts.join(", ") : "No LEDs";
+    }
+
+    function description(cfg, calc) {
+      const lines = [
+        `${cfg.sides} Light Box`,
+        `Box Size: ${Math.round(cfg.width)}mm (w) x ${Math.round(cfg.height)} mm (h)`,
+        cfg.extrusion.name,
+        cfg.lighting.label.replace(/^\d+\s*/, ""),
+        `LEDs: ${ledDescription(calc)}`,
+        `Total Power: ${calc.totalPower.toFixed(1)} Watts`,
+        `QTY ${calc.powerQty} QTY:${calc.powerQty} off ${calc.powerSpec.label}`,
+        `QTY ${calc.powerLeadQty} Power Lead${calc.powerLeadQty === 1 ? "" : "s"} - Exit from ${cfg.exitLeadFrom || "TBA"}, Location ${cfg.leadLocation || "TBA"}`,
+        `QTY: ${calc.topBottomQty} ${cfg.extrusion.name}${Math.round(calc.topBottomSectionLength)} mm for horizontals`,
+        `QTY: ${calc.sideQty} ${cfg.extrusion.name}${Math.round(calc.sideSectionLength)} mm for Verticals`,
+        calc.joinerQty ? `QTY: ${calc.joinerQty} Frame joiners` : "",
+        calc.verticalBraceQty ? `${calc.verticalBraceQty} Vertical H-Brace ${Math.round(calc.verticalBraceLength)} mm` : "",
+        calc.horizontalBraceQty ? `${calc.horizontalBraceQty} Horizontal H-Brace ${Math.round(calc.horizontalBraceLength)} mm` : ""
+      ];
+      if (cfg.powder) lines.push(`${cfg.colour} Powder Coating of frame`);
+      if (cfg.includeFeet) lines.push("Includes two feet");
+      lines.push(`Packing dimensions: ${calc.packingLengthCm} cm x ${calc.packingWidthCm}cm x ${calc.packingHeightCm} cm (Aprox), Weight: ${calc.weightKg} Kg`);
+      return lines.filter(Boolean).join("\r\n");
+    }
+
+    function buildUrls(cfg, calc, desc) {
+      const shortName = cfg.shortName;
+      const skinUnitPrice = calc.skinQtyPerBox ? calc.skinPrice / calc.skinQtyPerBox : 0;
+      const bounceUnitPrice = calc.bounceQtyPerBox ? calc.bouncePrice / calc.bounceQtyPerBox : 0;
+      const boxUrl = `https://vivad.com.au/shopping-cart?qcode=${DATA.boxQcode}&quantity=${cfg.quantity}&shortname=${encode(shortName)}&description=${encode(desc)}&packinglengthcm=${calc.packingLengthCm}&packingwidthcm=${calc.packingWidthCm}&packingheightcm=${calc.packingHeightCm}&weightkg=${calc.weightKg}&price=${Math.ceil(increasedPrice(calc.boxPrice))}`;
+      const skinUrl = `https://vivad.com.au/shopping-cart?qcode=${cfg.skin.qcode}&quantity=${calc.skinQtyTotal}&width=${Math.round(cfg.width)}&height=${Math.round(cfg.height)}&shortname=${encode(shortName)}&price=${Math.ceil(increasedPrice(skinUnitPrice))}`;
+      const bounceUrl = calc.bounceQtyTotal
+        ? `https://vivad.com.au/shopping-cart?qcode=${DATA.bounceQcode}&quantity=${calc.bounceQtyTotal}&width=${Math.round(calc.bounceWidth)}&height=${Math.round(calc.bounceHeight)}&shortname=${encode(shortName)}&price=${Math.ceil(increasedPrice(bounceUnitPrice))}`
+        : "";
+      return { boxUrl, skinUrl, bounceUrl };
+    }
+
+    function pluralize(value, singular, plural) {
+      return value === 1 ? singular : plural;
+    }
+
+    function renderDiagram(cfg, calc) {
+      const maxDim = Math.max(cfg.width, cfg.height);
+      const w = Math.max(260, cfg.width / maxDim * 620);
+      const h = Math.max(260, cfg.height / maxDim * 620);
+      const pad = 34;
+      const scale = Math.min(w / cfg.width, h / cfg.height);
+      const frame = Math.max(12, Math.min(34, cfg.extrusion.braceAllowance * scale));
+      const edges = new Set(cfg.lighting.edges);
+      const ledRects = [];
+      const braceRects = [];
+      const marker = 10;
+      const glow = Math.min(86, Math.max(34, Math.min(w, h) * 0.16));
+      const bracePx = Math.max(3, DATA.hBraceWidth * scale);
+      const innerLeft = pad + frame;
+      const innerTop = pad + frame;
+      const innerWidth = Math.max(0, w - frame * 2);
+      const innerHeight = Math.max(0, h - frame * 2);
+      const horizontalMapWidth = Math.max(1, cfg.width - 2 * cfg.extrusion.braceAllowance);
+      const verticalMapHeight = Math.max(1, cfg.height - 2 * cfg.extrusion.braceAllowance);
+      const xFromBraceMm = (mmValue) => innerLeft + (mmValue - cfg.extrusion.braceAllowance) / horizontalMapWidth * innerWidth;
+      const yFromBraceMm = (mmValue) => innerTop + (mmValue - cfg.extrusion.braceAllowance) / verticalMapHeight * innerHeight;
+      const verticalBraceTop = innerTop;
+      const verticalBraceBottom = innerTop + innerHeight;
+
+      for (let index = 0; index < calc.verticalBraceQty; index += 1) {
+        const centerMm = cfg.extrusion.braceAllowance + (index + 1) * calc.horizontalBraceLength + index * DATA.hBraceWidth + DATA.hBraceWidth / 2;
+        const x = xFromBraceMm(centerMm) - bracePx / 2;
+        braceRects.push(`<rect x="${x}" y="${verticalBraceTop}" width="${bracePx}" height="${Math.max(0, verticalBraceBottom - verticalBraceTop)}" fill="#8b9491" stroke="#59635f" stroke-width="1"/>`);
+      }
+
+      for (let row = 0; row < calc.horizontalBraceRows; row += 1) {
+        const centerMm = cfg.extrusion.braceAllowance + (row + 1) * calc.verticalSegmentLength + row * DATA.hBraceWidth + DATA.hBraceWidth / 2;
+        const y = yFromBraceMm(centerMm) - bracePx / 2;
+        for (let segment = 0; segment < calc.horizontalSegmentsPerRow; segment += 1) {
+          const startMm = cfg.extrusion.braceAllowance + segment * (calc.horizontalBraceLength + DATA.hBraceWidth);
+          const endMm = startMm + calc.horizontalBraceLength;
+          const x = xFromBraceMm(startMm);
+          const segmentWidth = Math.max(0, xFromBraceMm(endMm) - x);
+          braceRects.push(`<rect x="${x}" y="${y}" width="${segmentWidth}" height="${bracePx}" fill="#9aa29f" stroke="#59635f" stroke-width="1"/>`);
+        }
+      }
+      const addEdge = (edge) => {
+        if (!edges.has(edge)) return;
+        if (edge === "top" || edge === "bottom") {
+          const y = pad + (edge === "top" ? frame / 2 : h - frame / 2);
+          const innerY = edge === "top" ? pad + frame : pad + h - frame - glow;
+          const grad = edge === "top" ? "shineDown" : "shineUp";
+          ledRects.push(`<rect x="${pad + frame}" y="${innerY}" width="${Math.max(0, w - frame * 2)}" height="${glow}" fill="url(#${grad})"/>`);
+          ledRects.push(`<line x1="${pad + frame}" y1="${y}" x2="${pad + w - frame}" y2="${y}" stroke="#ffd84a" stroke-width="7" stroke-linecap="round" filter="url(#ledGlow)"/>`);
+          ledRects.push(`<line x1="${pad + frame}" y1="${y}" x2="${pad + w - frame}" y2="${y}" stroke="#fff3a3" stroke-width="2" stroke-linecap="round"/>`);
+          for (let x = pad + frame + 18; x < pad + w - frame; x += 36) ledRects.push(`<line x1="${x}" y1="${y - marker / 2}" x2="${x}" y2="${y + marker / 2}" stroke="#fff8c9" stroke-width="2"/>`);
+        } else {
+          const x = pad + (edge === "left" ? frame / 2 : w - frame / 2);
+          const innerX = edge === "left" ? pad + frame : pad + w - frame - glow;
+          const grad = edge === "left" ? "shineRight" : "shineLeft";
+          ledRects.push(`<rect x="${innerX}" y="${pad + frame}" width="${glow}" height="${Math.max(0, h - frame * 2)}" fill="url(#${grad})"/>`);
+          ledRects.push(`<line x1="${x}" y1="${pad + frame}" x2="${x}" y2="${pad + h - frame}" stroke="#ffd84a" stroke-width="7" stroke-linecap="round" filter="url(#ledGlow)"/>`);
+          ledRects.push(`<line x1="${x}" y1="${pad + frame}" x2="${x}" y2="${pad + h - frame}" stroke="#fff3a3" stroke-width="2" stroke-linecap="round"/>`);
+          for (let y = pad + frame + 18; y < pad + h - frame; y += 36) ledRects.push(`<line x1="${x - marker / 2}" y1="${y}" x2="${x + marker / 2}" y2="${y}" stroke="#fff8c9" stroke-width="2"/>`);
+        }
+      };
+      ["top", "right", "bottom", "left"].forEach(addEdge);
+      $("diagram").innerHTML = `
+        <svg viewBox="0 0 ${w + pad * 2} ${h + pad * 2}" role="img" aria-label="Edgelit lightbox layout">
+          <defs>
+            <filter id="ledGlow" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <linearGradient id="shineDown" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#ffe76a" stop-opacity="0.62"/><stop offset="1" stop-color="#ffe76a" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="shineUp" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stop-color="#ffe76a" stop-opacity="0.62"/><stop offset="1" stop-color="#ffe76a" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="shineRight" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#ffe76a" stop-opacity="0.62"/><stop offset="1" stop-color="#ffe76a" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="shineLeft" x1="1" y1="0" x2="0" y2="0">
+              <stop offset="0" stop-color="#ffe76a" stop-opacity="0.62"/><stop offset="1" stop-color="#ffe76a" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <rect x="${pad}" y="${pad}" width="${w}" height="${h}" fill="#d7dcdb" stroke="#8c9693" stroke-width="1"/>
+          <rect x="${pad + frame}" y="${pad + frame}" width="${Math.max(0, w - frame * 2)}" height="${Math.max(0, h - frame * 2)}" fill="#ffffff" stroke="#ccd4d1" stroke-width="1"/>
+          ${braceRects.join("")}
+          ${ledRects.join("")}
+          <text x="${pad}" y="${pad + h + 24}" fill="#34413d" font-size="14" font-weight="700">${Math.round(cfg.width)} x ${Math.round(cfg.height)} mm</text>
+        </svg>
+      `;
+    }
+
+    function render() {
+      const cfg = getConfig();
+      if (!cfg.powder) $("colour").value = "Clear Anodised";
+      $("colour").disabled = !cfg.powder;
+      $("otherColourField").hidden = !cfg.powder || $("colour").value !== "Other";
+      storeSharedSize(false);
+
+      const calc = calculate(cfg);
+      const desc = description(cfg, calc);
+      const urls = buildUrls(cfg, calc, desc);
+      [...$("powerSupplyType").options].forEach((option) => {
+        const spec = DATA.power[option.value];
+        const qty = calc.totalPower > 0 ? Math.ceil(calc.totalPower / spec.limit) : 0;
+        const cost = increasedPrice(qty * spec.cost);
+        option.textContent = `QTY: ${qty} ${spec.label} $${cost.toFixed(2)}`;
+      });
+      $("powerLeadQty").textContent = calc.powerLeadQty;
+      $("powerDensity").textContent = `${calc.powerDensity.toFixed(1)} W/m2`;
+      $("averageLuminance").textContent = `Average Luminance: ${Math.round(calc.averageLuminance)} Nits cd/m2`;
+      $("skinPrice").textContent = money(increasedPrice(calc.skinPrice));
+      $("bouncePrice").textContent = money(increasedPrice(calc.bouncePrice));
+      $("skinQty").textContent = `${calc.skinQtyPerBox} per box (${calc.skinQtyTotal} total)`;
+      $("bounceQty").textContent = `${calc.bounceQtyPerBox} per box (${calc.bounceQtyTotal} total)`;
+      $("boxPrice").textContent = money(increasedPrice(calc.boxPrice));
+      $("unitCost").textContent = money(increasedPrice(calc.skinPrice + calc.bouncePrice));
+      $("unitCostNote").textContent = calc.bounceQtyPerBox
+        ? "1 skin + 1 bounce cloth per box."
+        : "2 skins per box. No bounce cloth.";
+      $("totalCost").textContent = money(increasedPrice(calc.unitCost));
+      $("totalNote").textContent = `${cfg.quantity} unit${cfg.quantity === 1 ? "" : "s"} including GST.`;
+      $("powerWatts").textContent = `${calc.totalPower.toFixed(1)} W`;
+      $("ledSummary").textContent = ledDescription(calc);
+      $("description").value = desc;
+      $("selectedUrl").value = urls.boxUrl;
+      $("costComponents").innerHTML = calc.costComponents.map((line) => `
+        <tr>
+          <td>${line.item}</td>
+          <td class="num">${qty(line.qty)}</td>
+          <td class="num">${line.size}</td>
+          <td class="num">${money2(increasedPrice(line.cost))}</td>
+        </tr>
+      `).join("") + `
+        <tr>
+          <td><strong>Total Cost</strong></td>
+          <td class="num"></td>
+          <td class="num"></td>
+          <td class="num"><strong>${money2(increasedPrice(calc.rawCost))}</strong></td>
+        </tr>
+      `;
+      renderDiagram(cfg, calc);
+
+      const warnings = [];
+      const brightnessRatio = calc.area ? (calc.totalPower / calc.area) / 50 : 0;
+      if (brightnessRatio > 1.45) {
+        warnings.push("Lightbox is very Bright, consider lighting configuration.");
+      } else if (brightnessRatio > 0 && brightnessRatio < 0.55) {
+        warnings.push("Lightbox has low lighting, consider lighting configuration.");
+      }
+      $("warnings").innerHTML = warnings.length
+        ? warnings.map((item) => `<div class="warning show">${item}</div>`).join("")
+        : `<p class="empty-note">No warnings.</p>`;
+
+      const allParts = [
+        `${cfg.quantity} ${pluralize(cfg.quantity, "Box", "Boxes")}`,
+        `${calc.skinQtyTotal} ${pluralize(calc.skinQtyTotal, "Skin", "Skins")}`
+      ];
+      if (calc.bounceQtyTotal) {
+        allParts.push(`${calc.bounceQtyTotal} ${pluralize(calc.bounceQtyTotal, "Bounce Cloth", "Bounce Cloths")}`);
+      }
+      const buttons = [
+        { label: `Add ${cfg.quantity} ${pluralize(cfg.quantity, "Box", "Boxes")} To Cart`, code: DATA.boxQcode, url: urls.boxUrl, className: "" },
+        { label: `Add ${calc.skinQtyTotal} ${cfg.skin.name} ${pluralize(calc.skinQtyTotal, "Skin", "Skins")} To Cart`, code: cfg.skin.qcode, url: urls.skinUrl, className: "secondary" },
+        ...(calc.bounceQtyTotal ? [{ label: `Add ${calc.bounceQtyTotal} ${pluralize(calc.bounceQtyTotal, "Bounce Cloth", "Bounce Cloths")} To Cart`, code: DATA.bounceQcode, url: urls.bounceUrl, className: "secondary" }] : []),
+        { label: `Add All (${allParts.join(" + ")})`, code: "Bundle", url: [urls.boxUrl, urls.skinUrl, urls.bounceUrl].filter(Boolean), className: "combo" }
+      ];
+      $("cartButtons").innerHTML = buttons.map((button) =>
+        `<button class="cart-button ${button.className}" type="button" data-url="${encode(JSON.stringify(button.url))}"><span>${button.label}</span><small>${button.code}</small></button>`
+      ).join("");
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest(".cart-button");
+      if (!button) return;
+      const value = JSON.parse(decodeURIComponent(button.dataset.url));
+      const urls = Array.isArray(value) ? value : [value];
+      $("selectedUrl").value = urls.join("\n");
+      const first = urls.shift();
+      if (first) {
+        const win = window.open(first, "_blank");
+        urls.forEach((url, index) => setTimeout(() => { if (win) win.location.href = url; }, 2500 * (index + 1)));
+      }
+    });
+
+    function handleEdit(event) {
+      if (event.target.matches("select")) {
+        saveFormState();
+      }
+      if (event.target === $("width") || event.target === $("height")) {
+        storeSharedSize();
+      }
+      render();
+    }
+
+    document.addEventListener("input", handleEdit);
+    document.addEventListener("change", handleEdit);
+    document.querySelectorAll(".app-tabs a").forEach((link) => {
+      link.addEventListener("click", saveFormState);
+    });
+    window.addEventListener("storage", (event) => {
+      if (event.key !== SHARED_SIZE_KEY) return;
+      loadSharedSize();
+      render();
+    });
+    initSelects();
+    restoreFormState();
+    loadSharedSize();
+    render();
+  </script>
+</body>
+</html>

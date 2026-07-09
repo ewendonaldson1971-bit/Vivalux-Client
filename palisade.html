@@ -1,0 +1,1315 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vivtrack 4 Builder</title>
+  <style>
+    :root {
+      --ink: #18211f;
+      --muted: #63706c;
+      --line: #d8dedb;
+      --line-strong: #aeb8b4;
+      --paper: #fbfcfb;
+      --panel: #ffffff;
+      --field: #fff7b8;
+      --field-focus: #ffef6a;
+      --accent: #007a5f;
+      --accent-dark: #005742;
+      --blue: #225b82;
+      --rose: #ad3f56;
+      --shadow: 0 16px 38px rgba(27, 42, 38, 0.11);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(0, 122, 95, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(0, 122, 95, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 42px 42px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea, output { font: inherit; }
+    a { color: inherit; }
+
+    .app-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(24, 33, 31, 0.08);
+    }
+
+    .app-tabs a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .app-tabs a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .app {
+      min-height: calc(100vh - 61px);
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 61px;
+      height: calc(100vh - 61px);
+      overflow: auto;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.93);
+      border-right: 1px solid var(--line);
+      box-shadow: 10px 0 28px rgba(24, 33, 31, 0.05);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .brand-logo {
+      display: block;
+      width: min(210px, 70%);
+      height: auto;
+      margin: 0 0 16px;
+    }
+
+    .mast {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h1, h2 {
+      margin: 0;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    h1 { font-size: 26px; }
+    h2 { font-size: 16px; }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #eef8f4;
+      color: var(--accent-dark);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0, 122, 95, 0.12);
+    }
+
+    .section {
+      margin-bottom: 22px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-title {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      color: #34413d;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .field small {
+      min-height: 16px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    input, select, textarea, output {
+      width: 100%;
+      min-height: 42px;
+      padding: 9px 10px;
+      color: var(--ink);
+      background: var(--field);
+      border: 1px solid #c8b94a;
+      border-radius: var(--radius);
+      outline: none;
+    }
+
+    output {
+      display: flex;
+      align-items: center;
+      font-weight: 800;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      background: var(--field-focus);
+      border-color: #8d7e00;
+      box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.25);
+    }
+
+    .check-field {
+      display: grid;
+      grid-template-columns: auto 52px minmax(0, 1fr);
+      align-items: center;
+      gap: 12px;
+      min-height: 70px;
+      padding: 10px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f4f7f6;
+    }
+
+    .check-field.full { grid-column: 1 / -1; }
+
+    .check-field input {
+      width: 19px;
+      height: 19px;
+      min-height: 19px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .check-field img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .check-field span {
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric, .panel, .actions {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 16px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.08fr) minmax(340px, 0.92fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .left-stack, .right-stack {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .panel, .actions { padding: 18px; }
+    .panel h2, .actions h2 { margin: 0 0 12px; }
+
+    .diagram-wrap {
+      min-height: 420px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #f4f7f6;
+      overflow: hidden;
+    }
+
+    svg { display: block; width: 100%; height: auto; }
+
+    .product-photo {
+      display: block;
+      width: min(100%, 360px);
+      max-height: 240px;
+      object-fit: contain;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .shape-line {
+      stroke: #87918d;
+      stroke-width: 6;
+    }
+
+    .minibrace-line {
+      stroke: #225b82;
+      stroke-width: 3;
+    }
+
+    .dim {
+      stroke: #34413d;
+      stroke-width: 1.4;
+    }
+
+    .guide {
+      stroke: #9aa8a3;
+      stroke-width: 1;
+      stroke-dasharray: 5 6;
+    }
+
+    .dim-labels {
+      fill: #34413d;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .table th, .table td {
+      padding: 9px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    .table .num { text-align: right; white-space: nowrap; }
+
+    .button-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .cart-button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 54px;
+      border: 1px solid var(--accent-dark);
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
+      padding: 11px 12px;
+      box-shadow: 0 8px 18px rgba(0, 122, 95, 0.18);
+      text-decoration: none;
+    }
+
+    .cart-button:hover { background: var(--accent-dark); }
+    .cart-button span { min-width: 0; font-weight: 800; }
+    .cart-button small { color: rgba(255, 255, 255, 0.76); font-size: 11px; text-align: right; white-space: nowrap; }
+    .cart-button.secondary { background: var(--blue); border-color: #18435f; }
+    .cart-button.secondary:hover { background: #18435f; }
+    .cart-button.combo { background: #000000; border-color: #000000; }
+    .cart-button.combo:hover { background: #171717; }
+    .cart-button.rose { background: var(--rose); border-color: #7c2c3e; }
+    .cart-button.rose:hover { background: #7c2c3e; }
+
+    .url-box, .description-box {
+      width: 100%;
+      min-height: 110px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #ffffff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+
+    .url-box { margin-top: 12px; min-height: 82px; }
+    .description-box { min-height: 220px; }
+
+    @media (max-width: 1120px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .summary-grid, .workspace { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 700px) {
+      .app-tabs { grid-template-columns: 1fr; padding: 8px 16px; }
+      .sidebar, .main { padding: 16px; }
+      .mast, .grid, .button-grid { grid-template-columns: 1fr; }
+      .mast { display: grid; }
+      .summary-grid { gap: 10px; }
+      .status { justify-self: start; }
+    }
+  </style>
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js"></script>
+</head>
+<body>
+  <nav class="app-tabs" aria-label="Application pages">
+    <a href="index.html">Backlit</a>
+    <a href="edgelit.html">Edgelit</a>
+    <a href="r300/index.html">R300</a>
+    <a class="active" href="palisade.html">Palisade</a>
+    <a href="cube.html">Cube</a>
+    <a href="https://vivad.com.au/shopping-cart">Go to Cart</a>
+  </nav>
+
+  <div class="app">
+    <aside class="sidebar">
+      <img class="brand-logo" src="vivad-logo.png" alt="Vivad">
+      <div class="mast">
+        <div><h1>Vivtrack 4 Builder</h1></div>
+        <div class="status">Live</div>
+      </div>
+
+      <form id="configForm">
+        <section class="section">
+          <h2 class="section-title">Quote Inputs</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="shortName">Short Name</label>
+              <input id="shortName" name="shortName" value="">
+            </div>
+            <div class="field">
+              <label for="quantity">QTY</label>
+              <input id="quantity" name="quantity" type="number" min="1" step="1" value="1">
+            </div>
+            <div class="field">
+              <label for="shape">Shape</label>
+              <select id="shape" name="shape"></select>
+            </div>
+            <div class="field full">
+              <label for="palisadeType">Type</label>
+              <select id="palisadeType" name="palisadeType"></select>
+            </div>
+            <div class="field">
+              <label for="length">Width mm</label>
+              <input id="length" name="length" type="number" min="100" step="1" value="3000">
+            </div>
+            <div class="field">
+              <label for="depth">Depth mm</label>
+              <input id="depth" name="depth" type="number" min="100" step="1" value="3000">
+            </div>
+            <div class="field">
+              <label for="height">Height mm</label>
+              <input id="height" name="height" type="number" min="100" step="1" value="1500">
+            </div>
+            <div class="field full">
+              <label for="maxPackingLength">Maximum Packing Length</label>
+              <select id="maxPackingLength" name="maxPackingLength"></select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Graphics</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="outerLengthMaterial">Outer Width</label>
+              <small id="outerLengthSize">0 x 0 mm</small>
+              <select id="outerLengthMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="outerLengthQty">QTY</label>
+              <small>&nbsp;</small>
+              <input id="outerLengthQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="outerDepthMaterial">Outer Depth</label>
+              <small id="outerDepthSize">0 x 0 mm</small>
+              <select id="outerDepthMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="outerDepthQty">QTY</label>
+              <small>&nbsp;</small>
+              <input id="outerDepthQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="innerLengthMaterial">Inner Width</label>
+              <small id="innerLengthSize">0 x 0 mm</small>
+              <select id="innerLengthMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="innerLengthQty">QTY</label>
+              <small>&nbsp;</small>
+              <input id="innerLengthQty" type="number" min="0" step="1" value="2">
+            </div>
+            <div class="field">
+              <label for="innerDepthMaterial">Inner Depth</label>
+              <small id="innerDepthSize">0 x 0 mm</small>
+              <select id="innerDepthMaterial"></select>
+            </div>
+            <div class="field">
+              <label for="innerDepthQty">QTY</label>
+              <small>&nbsp;</small>
+              <input id="innerDepthQty" type="number" min="0" step="1" value="2">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Add Ons</h2>
+          <div class="grid">
+            <label class="check-field full">
+              <input id="includeRigging" type="checkbox">
+              <img src="r300/assets/rigging-point.png" alt="">
+              <span id="riggingLabel">Include Rigging Points</span>
+            </label>
+          </div>
+        </section>
+      </form>
+    </aside>
+
+    <main class="main">
+      <section class="summary-grid" aria-label="Summary">
+        <div class="metric">
+          <span>Frame Price Ex GST</span>
+          <strong id="framePrice">$0</strong>
+          <small id="frameMeta">Frame only.</small>
+        </div>
+        <div class="metric">
+          <span>Graphics Price Ex GST</span>
+          <strong id="graphicsPrice">$0</strong>
+          <small>Selected skins.</small>
+        </div>
+        <div class="metric">
+          <span>Total Price Ex GST</span>
+          <strong id="grandTotal">$0</strong>
+          <small>Ex GST.</small>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <div class="left-stack">
+          <section class="panel">
+            <h2>Layout</h2>
+            <div class="diagram-wrap" id="diagram"></div>
+          </section>
+          <section class="panel">
+            <h2>Product Photo</h2>
+            <img class="product-photo" id="productPhoto" src="palisade-60mm.jpg" alt="Palisade extrusion photo">
+          </section>
+          <section class="panel" hidden>
+            <h2>Cost Components</h2>
+            <table class="table">
+              <thead>
+                <tr><th>Item</th><th class="num">Qty</th><th class="num">Size</th><th class="num">Cost</th></tr>
+              </thead>
+              <tbody id="lineItems"></tbody>
+            </table>
+          </section>
+        </div>
+
+        <div class="right-stack">
+          <section class="actions">
+            <h2>Cart Links</h2>
+            <div class="button-grid" id="cartButtons"></div>
+            <textarea class="url-box" id="selectedUrl" readonly></textarea>
+          </section>
+          <section class="panel">
+            <h2>Description</h2>
+            <textarea class="description-box" id="description" readonly></textarea>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const DATA = {
+      shapes: {
+        "Closed Shape": { cornerColumns: 4, endSections: 2 },
+        "U-Shape": { cornerColumns: 2, endSections: 2 },
+        "L-Shape": { cornerColumns: 1, endSections: 2 },
+        "L-Reversed-Shape": { cornerColumns: 1, endSections: 2 }
+      },
+      types: {
+        "Palisade 60mm": {
+          qcode: "Q138635-01",
+          allowance: 60,
+          extrusionOffset: 40,
+          frameCostPerM: 27.2,
+          frameKgPerM: 1088,
+          cornerCostPerM: 68,
+          cornerKgPerM: 2420,
+          miniBraceCostPerM: 11.23,
+          miniBraceKgPerM: 401
+        },
+        "Palisade 100mm DS": {
+          qcode: "Q138635-02",
+          allowance: 100,
+          extrusionOffset: 13,
+          frameCostPerM: 35.925,
+          frameKgPerM: 1437,
+          cornerCostPerM: 95,
+          cornerKgPerM: 3371,
+          miniBraceCostPerM: 11.23,
+          miniBraceKgPerM: 401
+        },
+        "Palisade 100 SS": {
+          qcode: "Q138635-03",
+          allowance: 100,
+          extrusionOffset: 55,
+          frameCostPerM: 44,
+          frameKgPerM: 1763,
+          cornerCostPerM: 95,
+          cornerKgPerM: 3371,
+          miniBraceCostPerM: 11.23,
+          miniBraceKgPerM: 0
+        }
+      },
+      graphics: {
+        "Standard": { rate: 45, qcode: "Q118020-01" },
+        "Blockout": { rate: 65, qcode: "Q118020-02" },
+        "D51": { rate: 55, qcode: "Q118020-12" },
+        "PolarLight": { rate: 55, qcode: "Q118020-09" },
+        "Fortuna": { rate: 55, qcode: "Q54823-03" },
+        "Plain Standard": { rate: 20, qcode: "Q54823-04" },
+        "Blockout White": { rate: 25, qcode: "Q54823-06" },
+        "Blockout Bounce": { rate: 25, qcode: "Q54823-07" },
+        "None": { rate: 0, qcode: "" }
+      },
+      tensionLockCost: 14,
+      labourPerCornerColumn: 104,
+      labourPerEnd: 60,
+      fabricKgPerSqm: 0.24,
+      joinerKg: 0.1,
+      cornerBracketKg: 0.1,
+      tensionLockKg: 0.07,
+      riggingPointKg: 0.07,
+      cornerColumnHorizontalOffset: 100,
+      packingLengths: [
+        { name: "A Pipe Rack 5.6M", mm: 5600 },
+        { name: "B LWB 3M", mm: 3000 },
+        { name: "C Van/Tray 2.5M", mm: 2500 },
+        { name: "D Car 1.5M", mm: 1500 }
+      ],
+      rigging: { qcode: "Q50930-33", label: "Rigging Point", unitCost: 12, pointDist: 2000 },
+      joinerPairs: { qcode: "Q50930-33", label: "joiner pairs", unitCost: 7 }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const FORM_STATE_KEY = "vivalux-palisade-form-state-closed-default";
+    const SHARED_DIMENSION_STATE_KEY = "vivalux-shared-frame-dimensions";
+    const SHARED_DIMENSION_LINKS = new Set(["r300/index.html", "palisade.html", "cube.html"]);
+    const DEFAULT_SHARED_DIMENSIONS = { width: 3000, depth: 3000, height: 1500 };
+    const PRICE_MULTIPLIER = 1.4285714;
+    const money = (value) => `$${(Number.isFinite(value) ? value : 0).toLocaleString("en-AU", { maximumFractionDigits: 2 })}`;
+    const whole = (value) => Math.round(Number.isFinite(value) ? value : 0);
+    const encode = encodeURIComponent;
+
+    function increasedPrice(value) {
+      const number = Number(value);
+      const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
+      return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+    }
+
+    function init() {
+      $("shape").innerHTML = Object.keys(DATA.shapes).map((name) =>
+        `<option value="${name}" ${name === "Closed Shape" ? "selected" : ""}>${name}</option>`
+      ).join("");
+      $("palisadeType").innerHTML = Object.keys(DATA.types).map((name) =>
+        `<option value="${name}" ${name === "Palisade 60mm" ? "selected" : ""}>${name}</option>`
+      ).join("");
+      $("maxPackingLength").innerHTML = DATA.packingLengths.map((item) =>
+        `<option value="${item.name}" ${item.name === "A Pipe Rack 5.6M" ? "selected" : ""}>${item.name}</option>`
+      ).join("");
+      $("maxPackingLength").value = "A Pipe Rack 5.6M";
+      const options = Object.keys(DATA.graphics).map((name) => `<option value="${name}" ${name === "D51" ? "selected" : ""}>${name}</option>`).join("");
+      ["outerLengthMaterial", "outerDepthMaterial", "innerLengthMaterial", "innerDepthMaterial"].forEach((id) => {
+        $(id).innerHTML = options;
+      });
+    }
+
+    function saveFormState() {
+      try {
+        const state = {};
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          state[el.name || el.id] = el.value;
+        });
+        localStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+    }
+
+    function restoreFormState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(FORM_STATE_KEY) || "{}");
+        document.querySelectorAll("#configForm select").forEach((el) => {
+          const key = el.name || el.id;
+          if (Object.prototype.hasOwnProperty.call(state, key)) {
+            el.value = state[key];
+          }
+        });
+      } catch {
+        /* Ignore malformed saved state. */
+      }
+    }
+
+    function positiveNumber(value) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : null;
+    }
+
+    function clampForInput(input, value) {
+      const min = input.min === "" ? null : Number(input.min);
+      const max = input.max === "" ? null : Number(input.max);
+      let clamped = value;
+      if (Number.isFinite(min)) clamped = Math.max(min, clamped);
+      if (Number.isFinite(max)) clamped = Math.min(max, clamped);
+      return clamped;
+    }
+
+    function setSharedDimensionInput(id, value) {
+      const input = $(id);
+      const number = positiveNumber(value);
+      if (!input || number === null) return;
+      input.value = String(Math.round(clampForInput(input, number)));
+    }
+
+    function normalizedSharedDimensions(source) {
+      const dimensions = {};
+      ["width", "height"].forEach((key) => {
+        const value = positiveNumber(source && source[key]);
+        if (value !== null) dimensions[key] = value;
+      });
+      const depth = positiveNumber(source && (source.depth ?? source.length));
+      if (depth !== null) dimensions.depth = depth;
+      return dimensions;
+    }
+
+    function readStoredSharedDimensions() {
+      try {
+        return normalizedSharedDimensions(JSON.parse(localStorage.getItem(SHARED_DIMENSION_STATE_KEY) || "{}"));
+      } catch {
+        return {};
+      }
+    }
+
+    function readUrlSharedDimensions() {
+      const params = new URLSearchParams(window.location.search);
+      return normalizedSharedDimensions({
+        width: params.get("width"),
+        depth: params.get("depth") || params.get("length"),
+        height: params.get("height")
+      });
+    }
+
+    function currentSharedDimensions() {
+      return {
+        width: positiveNumber($("length").value) || 3000,
+        depth: positiveNumber($("depth").value) || 3000,
+        height: positiveNumber($("height").value) || 1500
+      };
+    }
+
+    function updateSharedDimensionLinks(dimensions = currentSharedDimensions()) {
+      document.querySelectorAll(".app-tabs a").forEach((link) => {
+        const originalHref = link.dataset.dimensionHref || link.getAttribute("href") || "";
+        link.dataset.dimensionHref = originalHref;
+        if (!SHARED_DIMENSION_LINKS.has(originalHref)) return;
+
+        const url = new URL(originalHref, window.location.href);
+        url.searchParams.set("width", String(Math.round(dimensions.width)));
+        url.searchParams.delete("length");
+        url.searchParams.set("depth", String(Math.round(dimensions.depth)));
+        url.searchParams.set("height", String(Math.round(dimensions.height)));
+        link.href = url.href;
+      });
+    }
+
+    function saveSharedFrameDimensions() {
+      const dimensions = currentSharedDimensions();
+      try {
+        localStorage.setItem(SHARED_DIMENSION_STATE_KEY, JSON.stringify(dimensions));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+      updateSharedDimensionLinks(dimensions);
+    }
+
+    function restoreSharedFrameDimensions() {
+      const dimensions = { ...DEFAULT_SHARED_DIMENSIONS, ...readUrlSharedDimensions() };
+      setSharedDimensionInput("length", dimensions.width);
+      setSharedDimensionInput("depth", dimensions.depth);
+      setSharedDimensionInput("height", dimensions.height);
+    }
+
+    function applyGraphicQtyDefaultsForShape() {
+      const defaults = {
+        "Closed Shape": [2, 2, 2, 2],
+        "U-Shape": [1, 2, 1, 2],
+        "L-Shape": [1, 1, 1, 1],
+        "L-Reversed-Shape": [1, 1, 1, 1]
+      }[$("shape").value] || [1, 1, 1, 1];
+      ["outerLengthQty", "outerDepthQty", "innerLengthQty", "innerDepthQty"].forEach((id, index) => {
+        $(id).value = defaults[index];
+      });
+    }
+
+    function getConfig() {
+      const maxPackingLength = DATA.packingLengths.find((item) => item.name === $("maxPackingLength").value) || DATA.packingLengths[0];
+      return {
+        shortName: $("shortName").value.trim(),
+        quantity: Math.max(1, Math.round(Number($("quantity").value) || 1)),
+        shapeName: $("shape").value || "Closed Shape",
+        typeName: $("palisadeType").value || "Palisade 60mm",
+        maxPackingLength,
+        length: Math.max(100, Number($("length").value) || 3000),
+        depth: Math.max(100, Number($("depth").value) || 3000),
+        height: Math.max(100, Number($("height").value) || 1500),
+        graphics: [
+          { key: "outerLength", label: "Outer Width", material: $("outerLengthMaterial").value || "D51", qty: Math.max(0, Math.round(Number($("outerLengthQty").value) || 0)) },
+          { key: "outerDepth", label: "Outer Depth", material: $("outerDepthMaterial").value || "D51", qty: Math.max(0, Math.round(Number($("outerDepthQty").value) || 0)) },
+          { key: "innerLength", label: "Inner Width", material: $("innerLengthMaterial").value || "D51", qty: Math.max(0, Math.round(Number($("innerLengthQty").value) || 0)) },
+          { key: "innerDepth", label: "Inner Depth", material: $("innerDepthMaterial").value || "D51", qty: Math.max(0, Math.round(Number($("innerDepthQty").value) || 0)) }
+        ],
+        includeRigging: $("includeRigging").checked
+      };
+    }
+
+    function palisadeTypeLabel(typeName) {
+      return typeName.replace("Palisade ", "").replace("100 SS", "100SS");
+    }
+
+    function horizontalRunSpecs(shapeName, length, depth) {
+      if (shapeName === "Closed Shape") {
+        return [
+          { length, cornerEnds: 2 },
+          { length: depth, cornerEnds: 2 },
+          { length, cornerEnds: 2 },
+          { length: depth, cornerEnds: 2 }
+        ];
+      }
+      if (shapeName === "U-Shape") {
+        return [
+          { length: depth, cornerEnds: 1 },
+          { length: depth, cornerEnds: 1 },
+          { length, cornerEnds: 2 }
+        ];
+      }
+      return [
+        { length, cornerEnds: 1 },
+        { length: depth, cornerEnds: 1 }
+      ];
+    }
+
+    function horizontalRunLength(run) {
+      return Math.max(0, run.length - run.cornerEnds * DATA.cornerColumnHorizontalOffset);
+    }
+
+    function verticalBraceQty(cfg) {
+      return horizontalRunSpecs(cfg.shapeName, cfg.length, cfg.depth)
+        .reduce((sum, run) => sum + Math.floor(horizontalRunLength(run) / 2100), 0);
+    }
+
+    function riggingRunLengths(shapeName, length, depth) {
+      if (shapeName === "Closed Shape") return [length, length, depth, depth];
+      if (shapeName === "U-Shape") return [length, depth, depth];
+      return [length, depth];
+    }
+
+    function riggingPointQty(cfg) {
+      return riggingRunLengths(cfg.shapeName, cfg.length, cfg.depth)
+        .reduce((sum, run) => sum + Math.ceil(run / DATA.rigging.pointDist), 0);
+    }
+
+    function splitLength(length, maxLength) {
+      if (length <= 0) return [];
+      const sectionCount = Math.max(1, Math.ceil(length / maxLength));
+      const baseLength = Math.floor(length / sectionCount);
+      const remainder = length - baseLength * sectionCount;
+      return [
+        { qty: remainder, length: baseLength + 1 },
+        { qty: sectionCount - remainder, length: baseLength }
+      ].filter((section) => section.qty > 0 && section.length > 0);
+    }
+
+    function joinerPlan(cfg) {
+      const maxLength = Math.max(1, cfg.maxPackingLength.mm);
+      const runs = horizontalRunSpecs(cfg.shapeName, cfg.length, cfg.depth);
+      const groupedSections = new Map();
+      let joinerPairs = 0;
+      let longestPackedSection = cfg.height;
+      let totalLength = 0;
+
+      runs.forEach((run) => {
+        const runLength = horizontalRunLength(run);
+        const sections = splitLength(runLength, maxLength);
+        const sectionCount = sections.reduce((sum, section) => sum + section.qty, 0);
+        joinerPairs += Math.max(0, sectionCount - 1) * 2;
+        totalLength += runLength * 2;
+        sections.forEach((section) => {
+          groupedSections.set(section.length, (groupedSections.get(section.length) || 0) + section.qty * 2);
+          longestPackedSection = Math.max(longestPackedSection, section.length);
+        });
+      });
+
+      const sections = Array.from(groupedSections, ([length, qty]) => ({ length, qty }));
+      return { sections, joinerPairs, longestPackedSection, totalLength };
+    }
+
+    function graphicSize(cfg, type, key) {
+      const isLShape = cfg.shapeName === "L-Shape" || cfg.shapeName === "L-Reversed-Shape";
+      const lengthAllowance = isLShape ? type.allowance : type.allowance * 2;
+      const depthAllowance = cfg.shapeName === "Closed Shape" ? type.allowance * 2 : type.allowance;
+      if (key === "outerLength") return { width: cfg.length, height: cfg.height };
+      if (key === "outerDepth") return { width: cfg.depth, height: cfg.height };
+      if (key === "innerLength") return { width: Math.max(0, cfg.length - lengthAllowance), height: cfg.height };
+      return { width: Math.max(0, cfg.depth - depthAllowance), height: cfg.height };
+    }
+
+    function calculate() {
+      const cfg = getConfig();
+      const shape = DATA.shapes[cfg.shapeName];
+      const type = DATA.types[cfg.typeName];
+      const joiners = joinerPlan(cfg);
+      cfg.joinerPairQty = joiners.joinerPairs;
+      const horizontalMm = joiners.totalLength;
+      const crossBraces = verticalBraceQty(cfg);
+      const verticalBraceLength = Math.max(0, cfg.height - 2 * type.extrusionOffset);
+      const horizontalCost = horizontalMm * type.frameCostPerM / 1000;
+      const verticalCost = cfg.height * type.frameCostPerM / 1000 * shape.endSections;
+      const cornerCost = cfg.height * shape.cornerColumns * type.cornerCostPerM / 1000;
+      const cornerLabour = shape.cornerColumns * DATA.labourPerCornerColumn;
+      const endLabour = shape.endSections * DATA.labourPerEnd;
+      const miniBraceCost = verticalBraceLength * crossBraces * type.miniBraceCostPerM / 1000;
+      const tensionLocks = shape.cornerColumns * 4 + crossBraces * 2;
+      const tensionLockCost = tensionLocks * DATA.tensionLockCost;
+      const numberRiggingPoints = riggingPointQty(cfg);
+      const riggingCost = cfg.includeRigging ? numberRiggingPoints * DATA.rigging.unitCost : 0;
+      const cornerBracketQty = cfg.shapeName === "Closed Shape" ? 0 : 8;
+      const cornerJoinerQty = shape.cornerColumns * 8;
+      const totalJoinerQty = cornerJoinerQty + cfg.joinerPairQty * 2;
+      const framePrice = horizontalCost + verticalCost + cornerCost + cornerLabour + endLabour + miniBraceCost + tensionLockCost + riggingCost;
+
+      const horizontalWeight = horizontalMm * type.frameKgPerM / 1000;
+      const verticalWeight = cfg.height * type.frameKgPerM / 1000 * shape.endSections;
+      const cornerWeight = cfg.height * shape.cornerColumns * type.cornerKgPerM / 1000;
+      const miniBraceWeight = verticalBraceLength * crossBraces * type.miniBraceKgPerM / 1000;
+
+      const graphics = cfg.graphics.map((item) => {
+        const material = DATA.graphics[item.material] || DATA.graphics.None;
+        const size = graphicSize(cfg, type, item.key);
+        const priceEa = size.width * size.height / 1000000 * material.rate;
+        return {
+          ...item,
+          ...size,
+          material,
+          priceEa,
+          total: priceEa * item.qty
+        };
+      });
+      const graphicsTotal = graphics.reduce((sum, item) => sum + item.total, 0);
+      const fabricWeight = graphics.reduce((sum, item) =>
+        sum + (item.qty > 0 && item.material.rate > 0 ? item.qty * item.width * item.height / 1000000 * DATA.fabricKgPerSqm * 1000 : 0), 0);
+      const joinerWeight = totalJoinerQty * DATA.joinerKg * 1000;
+      const cornerBracketWeight = cornerBracketQty * DATA.cornerBracketKg * 1000;
+      const tensionLockWeight = tensionLocks * DATA.tensionLockKg * 1000;
+      const riggingWeight = cfg.includeRigging ? numberRiggingPoints * DATA.riggingPointKg * 1000 : 0;
+      const weightKg = Math.round((
+        horizontalWeight +
+        verticalWeight +
+        cornerWeight +
+        miniBraceWeight +
+        fabricWeight +
+        joinerWeight +
+        cornerBracketWeight +
+        tensionLockWeight +
+        riggingWeight
+      ) / 1000);
+      const addOnTotal = cfg.joinerPairQty * DATA.joinerPairs.unitCost;
+      const packingLength = Math.ceil(joiners.longestPackedSection / 10);
+      const packingWidth = 20;
+      const packingHeight = 20;
+      const horizontalSectionsDescription = joiners.sections
+        .map((section) => `${section.qty} @${whole(section.length)}mm`)
+        .join(", ") || "No horizontal sections";
+      const descriptionLines = [
+        `${cfg.typeName}, ${cfg.shapeName}, Width:${whole(cfg.length)}mm x Depth:${whole(cfg.depth)}mm x Height:${whole(cfg.height)}mm.`
+      ];
+      if (cfg.includeRigging && numberRiggingPoints > 0) descriptionLines.push(`Includes ${numberRiggingPoints} rigging points.`);
+      if (joiners.sections.length) descriptionLines.push(`Horizontal Sections: ${horizontalSectionsDescription}.`);
+      if (shape.cornerColumns > 0) descriptionLines.push(`${shape.cornerColumns} ${palisadeTypeLabel(cfg.typeName)} Corner Columns @${whole(cfg.height)}mm.`);
+      if (crossBraces > 0) descriptionLines.push(`Vertical braces: ${crossBraces} @${whole(verticalBraceLength)}mm.`);
+      if (cornerBracketQty > 0) descriptionLines.push(`Corner Brackets: ${cornerBracketQty}.`);
+      if (totalJoinerQty > 0) descriptionLines.push(`Joiners: ${totalJoinerQty}.`);
+      if (tensionLocks > 0) descriptionLines.push(`Tension Locks: ${tensionLocks}.`);
+      descriptionLines.push(`Packing Dimensions: ${packingLength}cm (l) x ${packingWidth}cm (w) x ${packingHeight}cm (h).`);
+      descriptionLines.push(`Total Weight Frame and Graphics: ${weightKg}Kg`);
+      const description = descriptionLines.join("\n");
+      const frameUrl = cartUrl({
+        qcode: type.qcode,
+        quantity: cfg.quantity,
+        shortname: cfg.shortName,
+        description,
+        packinglengthcm: packingLength,
+        packingwidthcm: packingWidth,
+        packingheightcm: packingHeight,
+        weightkg: weightKg,
+        price: increasedPrice(framePrice)
+      });
+
+      return {
+        cfg,
+        shape,
+        type,
+        horizontalMm,
+        crossBraces,
+        verticalBraceLength,
+        tensionLocks,
+        cornerBracketQty,
+        cornerJoinerQty,
+        totalJoinerQty,
+        joiners,
+        framePrice,
+        numberRiggingPoints,
+        riggingCost,
+        graphics,
+        graphicsTotal,
+        addOnTotal,
+        grandTotal: framePrice + graphicsTotal,
+        fabricWeight,
+        joinerWeight,
+        cornerBracketWeight,
+        tensionLockWeight,
+        riggingWeight,
+        weightKg,
+        packingLength,
+        packingWidth,
+        packingHeight,
+        description,
+        frameUrl,
+        lines: [
+          { item: "Horizontal Frame", qty: 1, size: `${whole(horizontalMm)} mm`, cost: horizontalCost },
+          { item: "Vertical Frame", qty: shape.endSections, size: `${whole(cfg.height)} mm`, cost: verticalCost },
+          { item: "Corner Extrusion", qty: shape.cornerColumns, size: `${whole(cfg.height)} mm`, cost: cornerCost },
+          { item: "Labour for corner columns", qty: shape.cornerColumns, size: "set up", cost: cornerLabour },
+          { item: "Labour End Sections", qty: shape.endSections, size: "set up", cost: endLabour },
+          { item: "Minibrace", qty: crossBraces, size: `${whole(verticalBraceLength)} mm`, cost: miniBraceCost },
+          { item: "Tension locks", qty: tensionLocks, size: "inc fitting", cost: tensionLockCost },
+          { item: "Rigging points", qty: cfg.includeRigging ? numberRiggingPoints : 0, size: "included in frame", cost: riggingCost },
+          { item: "Joiner pairs", qty: cfg.joinerPairQty, size: cfg.maxPackingLength.name, cost: cfg.joinerPairQty * DATA.joinerPairs.unitCost },
+          ...graphics.filter((item) => item.qty > 0 && item.material.rate > 0).map((item) => ({
+            item: `${item.material === DATA.graphics.None ? "" : item.material.qcode} ${item.label}`.trim(),
+            qty: item.qty,
+            size: `${whole(item.width)} x ${whole(item.height)} mm`,
+            cost: item.total
+          }))
+        ]
+      };
+    }
+
+    function cartUrl(params) {
+      return `https://vivad.com.au/shopping-cart?${Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null && value !== "")
+        .map(([key, value]) => `${encode(key)}=${encode(String(value))}`)
+        .join("&")}`;
+    }
+
+    function graphicUrl(item) {
+      if (!item.material.qcode || item.qty <= 0) return "";
+      return cartUrl({
+        qcode: item.material.qcode,
+        quantity: item.qty,
+        width: whole(item.width),
+        height: whole(item.height),
+        shortname: item.label,
+        price: increasedPrice(item.priceEa)
+      });
+    }
+
+    function openCartUrlsSequentially(urls) {
+      const queue = urls.filter(Boolean);
+      if (!queue.length) return;
+      const cartTab = window.open(queue[0], "_blank");
+      if (!cartTab) return;
+      queue.slice(1).forEach((url, index) => {
+        window.setTimeout(() => {
+          if (!cartTab.closed) {
+            cartTab.location.href = url;
+            cartTab.focus();
+          }
+        }, (index + 1) * 2500);
+      });
+    }
+
+    function renderDiagram(result) {
+      const { cfg } = result;
+      const scale = Math.min(
+        500 / Math.max(1, cfg.length + cfg.depth * 0.55),
+        310 / Math.max(1, cfg.height + cfg.depth * 0.32)
+      );
+      const origin = { x: 150, y: 92 };
+      const project = (x, y, z) => ({
+        x: origin.x + x * scale + y * scale * 0.55,
+        y: origin.y + (cfg.height - z) * scale + y * scale * 0.32
+      });
+      const planSegments = cfg.shapeName === "L-Reversed-Shape"
+        ? [[0, 0, cfg.length, 0], [0, 0, 0, cfg.depth]]
+        : cfg.shapeName === "L-Shape"
+          ? [[0, 0, cfg.length, 0], [cfg.length, 0, cfg.length, cfg.depth]]
+          : cfg.shapeName === "U-Shape"
+            ? [[0, 0, cfg.length, 0], [0, 0, 0, cfg.depth], [cfg.length, 0, cfg.length, cfg.depth]]
+            : [[0, 0, cfg.length, 0], [cfg.length, 0, cfg.length, cfg.depth], [cfg.length, cfg.depth, 0, cfg.depth], [0, cfg.depth, 0, 0]];
+      const pointKeys = new Map();
+      planSegments.forEach(([x1, y1, x2, y2]) => {
+        pointKeys.set(`${x1},${y1}`, [x1, y1]);
+        pointKeys.set(`${x2},${y2}`, [x2, y2]);
+      });
+      const pts = Array.from(pointKeys.values());
+      const line = (x1, y1, z1, x2, y2, z2, className, extra = "") => {
+        const a = project(x1, y1, z1);
+        const b = project(x2, y2, z2);
+        return `<line class="${className}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" ${extra}/>`;
+      };
+      const textAt = (x, y, z, label, dx = 0, dy = 0, anchor = "middle") => {
+        const p = project(x, y, z);
+        return `<text x="${p.x + dx}" y="${p.y + dy}" text-anchor="${anchor}">${label}</text>`;
+      };
+      const minibracePoints = [];
+      planSegments.forEach(([x1, y1, x2, y2]) => {
+        const span = Math.hypot(x2 - x1, y2 - y1);
+        const braceCount = Math.max(0, Math.ceil(span / 2100) - 1);
+        for (let i = 1; i <= braceCount; i += 1) {
+          const t = i / (braceCount + 1);
+          minibracePoints.push([x1 + (x2 - x1) * t, y1 + (y2 - y1) * t]);
+        }
+      });
+      const shapeLines = [
+        ...planSegments.map(([x1, y1, x2, y2]) => line(x1, y1, 0, x2, y2, 0, "shape-line")),
+        ...planSegments.map(([x1, y1, x2, y2]) => line(x1, y1, cfg.height, x2, y2, cfg.height, "shape-line")),
+        ...pts.map(([x, y]) => line(x, y, 0, x, y, cfg.height, "shape-line"))
+      ].join("");
+      const minibraces = minibracePoints
+        .map(([x, y]) => line(x, y, 0, x, y, cfg.height, "minibrace-line"))
+        .join("");
+      const dimLength = line(0, -260, cfg.height, cfg.length, -260, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const dimDepth = line(cfg.length + 240, 0, cfg.height, cfg.length + 240, cfg.depth, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const dimHeight = line(-155, 0, 0, -155, 0, cfg.height, "dim", 'marker-start="url(#arrow)" marker-end="url(#arrow)"');
+      const guideLines = [
+        line(0, 0, cfg.height, 0, -260, cfg.height, "guide"),
+        line(cfg.length, 0, cfg.height, cfg.length, -260, cfg.height, "guide"),
+        line(cfg.length, 0, cfg.height, cfg.length + 240, 0, cfg.height, "guide"),
+        line(cfg.length, cfg.depth, cfg.height, cfg.length + 240, cfg.depth, cfg.height, "guide"),
+        line(0, 0, 0, -155, 0, 0, "guide"),
+        line(0, 0, cfg.height, -155, 0, cfg.height, "guide")
+      ].join("");
+      $("diagram").innerHTML = `
+        <svg viewBox="0 0 760 520" role="img" aria-label="Palisade isometric diagram with width, depth and height">
+          <defs>
+            <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="strokeWidth">
+              <path d="M 0 0 L 8 4 L 0 8 z" fill="#34413d"/>
+            </marker>
+          </defs>
+          <rect x="0" y="0" width="760" height="520" fill="#f4f7f6"/>
+          <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+            ${guideLines}
+            ${dimLength}
+            ${dimDepth}
+            ${dimHeight}
+            ${shapeLines}
+            ${minibraces}
+          </g>
+          <g class="dim-labels">
+            <text x="28" y="34" text-anchor="start">${cfg.shapeName}</text>
+            ${textAt(cfg.length / 2, -260, cfg.height, `${whole(cfg.length)} mm Width`, 0, -12)}
+            ${textAt(cfg.length + 240, cfg.depth / 2, cfg.height, `${whole(cfg.depth)} mm Depth`, 22, 4, "start")}
+            ${textAt(-155, 0, cfg.height / 2, `${whole(cfg.height)} mm Height`, -18, 4, "end")}
+          </g>
+        </svg>
+      `;
+    }
+
+    function render() {
+      const result = calculate();
+      $("framePrice").textContent = money(increasedPrice(result.framePrice));
+      $("frameMeta").textContent = `${result.cfg.typeName}, ${result.cfg.shapeName}${result.cfg.includeRigging ? `, ${result.numberRiggingPoints} rigging points` : ""}`;
+      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(increasedPrice(result.numberRiggingPoints * DATA.rigging.unitCost))} Ex GST)`;
+      $("graphicsPrice").textContent = money(increasedPrice(result.graphicsTotal));
+      $("grandTotal").textContent = money(increasedPrice(result.grandTotal));
+      $("description").value = result.description;
+      $("productPhoto").src = result.cfg.typeName === "Palisade 60mm" ? "palisade-60mm.jpg" : "palisade-100mm.jpg";
+      $("productPhoto").alt = result.cfg.typeName === "Palisade 60mm" ? "60mm Palisade photo" : "100mm Palisade photo";
+      result.graphics.forEach((item) => {
+        $(`${item.key}Size`).textContent = `${whole(item.width)} x ${whole(item.height)} mm`;
+      });
+      $("lineItems").innerHTML = result.lines.filter((line) => line.qty > 0).map((line) => `
+        <tr>
+          <td>${line.item}</td>
+          <td class="num">${line.qty}</td>
+          <td class="num">${line.size}</td>
+          <td class="num">${money(increasedPrice(line.cost))}</td>
+        </tr>
+      `).join("") + `
+        <tr>
+          <td><strong>Total Frame</strong></td>
+          <td class="num"></td>
+          <td class="num"></td>
+          <td class="num"><strong>${money(increasedPrice(result.framePrice))}</strong></td>
+        </tr>
+      `;
+
+      const graphicUrls = result.graphics.map(graphicUrl).filter(Boolean);
+      const graphicQty = result.graphics.reduce((sum, item) => sum + (item.material.qcode ? item.qty : 0), 0);
+      const allUrls = [result.frameUrl, ...graphicUrls].filter(Boolean);
+      const allLabel = result.cfg.includeRigging
+        ? "Add All, Frame, Rigging points and Graphics to Cart"
+        : "Add All, Frame and Graphics to Cart";
+      const buttons = [
+        { label: "Add Frame To Cart", code: result.type.qcode, url: result.frameUrl },
+        graphicUrls.length
+          ? { label: `Add ${graphicQty} Graphics To Cart`, code: "Graphics", urls: graphicUrls, className: "secondary" }
+          : null,
+        { label: allLabel, code: "Bundle", urls: allUrls, className: "combo" }
+      ].filter(Boolean);
+      $("cartButtons").innerHTML = buttons.map((button) =>
+        `<button class="cart-button ${button.className || ""}" type="button" ${button.urls ? `data-bundle="${encode(JSON.stringify(button.urls))}"` : `data-url="${encode(button.url)}"`}><span>${button.label}</span><small>${button.code}</small></button>`
+      ).join("");
+      $("selectedUrl").value = result.frameUrl;
+      renderDiagram(result);
+    }
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest(".cart-button");
+      if (!button) return;
+      if (button.dataset.bundle) {
+        const urls = JSON.parse(decodeURIComponent(button.dataset.bundle));
+        $("selectedUrl").value = urls.join("\n");
+        openCartUrlsSequentially(urls);
+        return;
+      }
+      const url = decodeURIComponent(button.dataset.url);
+      $("selectedUrl").value = url;
+      window.open(url, "_blank");
+    });
+
+    function handleEdit(event) {
+      if (event.target === $("shape")) {
+        applyGraphicQtyDefaultsForShape();
+      }
+      if (event.target.matches("#length, #depth, #height")) {
+        saveSharedFrameDimensions();
+      }
+      if (event.target.matches("select")) {
+        saveFormState();
+      }
+      render();
+    }
+
+    document.addEventListener("input", handleEdit);
+    document.addEventListener("change", handleEdit);
+    document.querySelectorAll(".app-tabs a").forEach((link) => {
+      link.addEventListener("click", () => {
+        saveFormState();
+        saveSharedFrameDimensions();
+      });
+    });
+    init();
+    restoreFormState();
+    restoreSharedFrameDimensions();
+    applyGraphicQtyDefaultsForShape();
+    saveSharedFrameDimensions();
+    render();
+  </script>
+</body>
+</html>

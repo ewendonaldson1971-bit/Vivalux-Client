@@ -1,0 +1,2839 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vivtrack 4 Builder</title>
+  <style>
+    :root {
+      --ink: #18211f;
+      --muted: #63706c;
+      --line: #d8dedb;
+      --line-strong: #aeb8b4;
+      --paper: #fbfcfb;
+      --panel: #ffffff;
+      --field: #fff7b8;
+      --field-focus: #ffef6a;
+      --accent: #007a5f;
+      --accent-dark: #005742;
+      --blue: #225b82;
+      --rose: #ad3f56;
+      --shadow: 0 16px 38px rgba(27, 42, 38, 0.11);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(0, 122, 95, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(0, 122, 95, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 42px 42px;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app-tabs {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 8px;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.96);
+      border-bottom: 1px solid var(--line);
+      box-shadow: 0 8px 24px rgba(24, 33, 31, 0.08);
+    }
+
+    .app-tabs a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .app-tabs a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .app {
+      min-height: calc(100vh - 61px);
+      display: grid;
+      grid-template-columns: minmax(340px, 430px) minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 24px;
+      background: rgba(255, 255, 255, 0.93);
+      border-right: 1px solid var(--line);
+      box-shadow: 10px 0 28px rgba(24, 33, 31, 0.05);
+    }
+
+    .main {
+      min-width: 0;
+      padding: 24px;
+    }
+
+    .mast {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    .brand-logo {
+      display: block;
+      width: min(210px, 70%);
+      height: auto;
+      margin: 0 0 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.12;
+      font-weight: 800;
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 6px 10px;
+      border: 1px solid var(--line);
+      background: #eef8f4;
+      color: var(--accent-dark);
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .status::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 4px rgba(0, 122, 95, 0.12);
+    }
+
+    .page-switch {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin: 0 0 18px;
+    }
+
+    .page-switch a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 36px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .page-switch a.active {
+      border-color: var(--accent);
+      background: #eef8f4;
+      color: var(--accent-dark);
+    }
+
+    .section {
+      margin-bottom: 22px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+      margin-bottom: 0;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 12px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      font-weight: 800;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .field.full {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      color: #34413d;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    input,
+    select,
+    output {
+      width: 100%;
+      min-height: 42px;
+      border: 1px solid #c8b94a;
+      border-radius: var(--radius);
+      background: var(--field);
+      color: var(--ink);
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    output {
+      display: flex;
+      align-items: center;
+      font-weight: 800;
+      background: #fffbe3;
+    }
+
+    input:focus,
+    select:focus {
+      background: var(--field-focus);
+      border-color: #8d7e00;
+      box-shadow: 0 0 0 3px rgba(255, 214, 0, 0.25);
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      min-height: 18px;
+      padding: 0;
+      accent-color: var(--accent);
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 10px;
+      background: var(--field);
+      border: 1px solid #c8b94a;
+      border-radius: var(--radius);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .hint {
+      margin: 0;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .quote-note {
+      grid-column: 1 / -1;
+      margin-top: -4px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.35;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #f3f7f5;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .visual {
+      display: grid;
+      gap: 16px;
+    }
+
+    .box-preview {
+      position: relative;
+      min-height: 430px;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.72), rgba(226,238,235,0.72)),
+        repeating-linear-gradient(45deg, rgba(0, 122, 95, 0.08) 0 10px, transparent 10px 20px);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .lightbox {
+      position: relative;
+      width: var(--preview-width-px, min(88%, var(--preview-w)));
+      height: var(--preview-height-px, auto);
+      aspect-ratio: var(--box-ratio);
+      max-height: 365px;
+      background: #fffef5;
+      border: var(--frame-px) solid var(--frame-color);
+      box-sizing: border-box;
+      box-shadow:
+        0 0 26px rgba(255, 238, 122, 0.95),
+        inset 0 0 26px rgba(255, 214, 94, 0.33),
+        0 18px 28px rgba(24, 33, 31, 0.24);
+      overflow: hidden;
+    }
+
+    .lightbox::before,
+    .lightbox::after {
+      content: "";
+      position: absolute;
+      background: rgba(24, 33, 31, 0.5);
+      display: var(--brace-display);
+    }
+
+    .lightbox::before {
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 4px;
+      transform: translateY(-50%);
+    }
+
+    .lightbox::after {
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 4px;
+      transform: translateX(-50%);
+      display: var(--vertical-brace-display);
+    }
+
+    .matrix-canvas {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .dimensions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .dimension {
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #ffffff;
+    }
+
+    .dimension span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .dimension strong {
+      display: block;
+      margin-top: 5px;
+      font-size: 15px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 10px 9px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #34413d;
+      background: #f4f7f6;
+      font-size: 11px;
+      text-transform: uppercase;
+    }
+
+    td.num,
+    th.num {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .cart-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .cart-button {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 54px;
+      padding: 11px 12px;
+      text-decoration: none;
+      color: #ffffff;
+      background: var(--accent);
+      border-radius: var(--radius);
+      border: 1px solid var(--accent-dark);
+      box-shadow: 0 8px 18px rgba(0, 122, 95, 0.18);
+    }
+
+    .cart-button:hover {
+      background: var(--accent-dark);
+    }
+
+    button.cart-button {
+      width: 100%;
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
+    }
+
+    .cart-button span {
+      min-width: 0;
+      font-weight: 800;
+    }
+
+    .cart-button small {
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 11px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .secondary {
+      background: var(--blue);
+      border-color: #18435f;
+      box-shadow: 0 8px 18px rgba(34, 91, 130, 0.18);
+    }
+
+    .secondary:hover {
+      background: #18435f;
+    }
+
+    .rose {
+      background: var(--rose);
+      border-color: #7c2c3e;
+      box-shadow: 0 8px 18px rgba(173, 63, 86, 0.17);
+    }
+
+    .rose:hover {
+      background: #7c2c3e;
+    }
+
+    .combo {
+      background: #000000;
+      border-color: #000000;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+    }
+
+    .combo:hover {
+      background: #171717;
+    }
+
+    .description-block {
+      margin-top: 14px;
+    }
+
+    .description-title {
+      margin: 0 0 6px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .description-preview {
+      min-height: 124px;
+      max-height: 240px;
+      overflow: auto;
+      margin: 0;
+      padding: 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: #26322f;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .copy-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .copy-row input {
+      background: #ffffff;
+      border-color: var(--line-strong);
+      font-size: 12px;
+    }
+
+    .icon-button,
+    .plain-button {
+      min-height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius);
+      background: #ffffff;
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .icon-button {
+      width: 44px;
+      display: grid;
+      place-items: center;
+    }
+
+    .plain-button {
+      padding: 0 13px;
+    }
+
+    .download-row {
+      margin-top: 10px;
+    }
+
+    .download-row .plain-button {
+      width: 100%;
+      background: #f3f7f5;
+    }
+
+    .notice {
+      display: none;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      border: 1px solid #e5c66b;
+      background: #fff8df;
+      color: #705200;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .notice.show {
+      display: block;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 24px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #e9f3ef;
+      color: var(--accent-dark);
+      font-size: 11px;
+      font-weight: 800;
+    }
+
+    @media (max-width: 1120px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+
+      .workspace,
+      .summary-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app-tabs {
+        grid-template-columns: 1fr;
+        padding: 8px 16px;
+      }
+
+      .main,
+      .sidebar {
+        padding: 16px;
+      }
+
+      .mast,
+      .workspace,
+      .summary-grid,
+      .grid,
+      .dimensions {
+        grid-template-columns: 1fr;
+      }
+
+      .mast {
+        display: grid;
+      }
+
+      .status {
+        justify-self: start;
+      }
+
+      .box-preview {
+        min-height: 320px;
+      }
+    }
+  </style>
+  <link rel="stylesheet" href="brand.css">
+  <link rel="stylesheet" href="auth.css">
+  <script src="auth.js"></script>
+</head>
+<body>
+  <nav class="app-tabs" aria-label="Application pages">
+    <a class="active" href="index.html" data-size-link>Backlit</a>
+    <a href="edgelit.html" data-size-link>Edgelit</a>
+    <a href="r300/index.html">R300</a>
+    <a href="palisade.html">Palisade</a>
+    <a href="cube.html">Cube</a>
+    <a href="https://vivad.com.au/shopping-cart">Go to Cart</a>
+  </nav>
+  <div class="app">
+    <aside class="sidebar">
+      <img class="brand-logo" src="vivad-logo.png" alt="Vivad">
+      <div class="mast">
+        <div>
+          <h1>Vivtrack 4 Builder</h1>
+        </div>
+        <div class="status">Live</div>
+      </div>
+      <form id="configForm">
+        <section class="section">
+          <h2 class="section-title">Quote Inputs</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="shortName">Short Name</label>
+              <input id="shortName" name="shortName" value="">
+            </div>
+            <div class="field">
+              <label for="quantity">QTY</label>
+              <input id="quantity" name="quantity" type="number" min="1" step="1" value="1">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Lightbox</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="width">Width mm</label>
+              <input id="width" name="width" type="number" min="100" step="1" value="1000">
+            </div>
+            <div class="field">
+              <label for="height">Height mm</label>
+              <input id="height" name="height" type="number" min="100" step="1" value="2000">
+            </div>
+            <div class="field full">
+              <label for="extrusion">Type of Extrusion</label>
+              <select id="extrusion" name="extrusion"></select>
+            </div>
+            <div class="field full">
+              <label for="packingLength">Maximum Packing Length</label>
+              <select id="packingLength" name="packingLength"></select>
+            </div>
+            <div class="field full">
+              <label for="packingMethod">Packing</label>
+              <select id="packingMethod" name="packingMethod">
+                <option value="assembled">Send Assembled</option>
+                <option value="disassembled">Send Disassembled</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Finish</h2>
+          <div class="grid">
+            <div class="field">
+              <label for="powderCoating">Powder Coating</label>
+              <label class="toggle">
+                <input id="powderCoating" name="powderCoating" type="checkbox">
+                Enabled
+              </label>
+            </div>
+            <div class="field">
+              <label for="colour">Colour</label>
+              <select id="colour" name="colour"></select>
+            </div>
+            <div class="field full" id="otherColourField" hidden>
+              <label for="otherColour">Other Colour</label>
+              <input id="otherColour" name="otherColour" placeholder="Enter colour">
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Power Supplies and Leads</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="powerSupply">Power Supply</label>
+              <select id="powerSupply" name="powerSupply"></select>
+            </div>
+            <div class="field">
+              <label for="powerLeadQty">QTY of Leads</label>
+              <output id="powerLeadQty">0</output>
+            </div>
+            <div class="field full">
+              <label for="exitLeadFrom">Exit Lead from</label>
+              <select id="exitLeadFrom" name="exitLeadFrom">
+                <option>TBA</option>
+                <option>Not Important</option>
+                <option>Rear of extrusion</option>
+                <option>Side of Extrusion</option>
+              </select>
+            </div>
+            <div class="field full">
+              <label for="leadLocation">Location</label>
+              <select id="leadLocation" name="leadLocation">
+                <option>TBA</option>
+                <option>Not Important</option>
+                <option>Top Left</option>
+                <option>Top Middle</option>
+                <option>Top Right</option>
+                <option>Middle Left</option>
+                <option>Middle Right</option>
+                <option>Bottom Left</option>
+                <option>Bottom Middle</option>
+                <option>Bottom Right</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Skin</h2>
+          <div class="grid">
+            <div class="field full">
+              <label for="skin">Skin Option</label>
+              <select id="skin" name="skin"></select>
+            </div>
+            <div class="field">
+              <label for="skinPrice">Skin Price</label>
+              <output id="skinPrice">$0</output>
+            </div>
+            <div class="field">
+              <label for="skinRate">Skin Rate</label>
+              <output id="skinRate">$65 / sqm</output>
+            </div>
+            <div class="field">
+              <label for="cartonDimensions">Carton Dimensions</label>
+              <output id="cartonDimensions">0 x 0 x 0 cm</output>
+            </div>
+            <div class="field">
+              <label for="cartonPrice">Carton Price</label>
+              <output id="cartonPrice">$0</output>
+            </div>
+          </div>
+        </section>
+      </form>
+    </aside>
+
+    <main class="main">
+      <section class="summary-grid" aria-label="Summary">
+        <div class="metric">
+          <span>Lightbox Price</span>
+          <strong id="boxPrice">$0</strong>
+          <small id="boxPriceNote">Frame, panel, LEDs, power and labour.</small>
+        </div>
+        <div class="metric">
+          <span>Graphics Price</span>
+          <strong id="unitCost">$0</strong>
+          <small>Selected print skin.</small>
+        </div>
+        <div class="metric">
+          <span>Total Ex GST Price</span>
+          <strong id="totalCost">$0</strong>
+          <small id="totalCostNote">Lightbox + graphics + packing.</small>
+        </div>
+        <div class="metric">
+          <span>Power</span>
+          <strong id="powerWatts">0 W</strong>
+          <small><span id="powerDensity">0 W/m2</span> · <span id="ledSummary">LED layout pending.</span><br><span id="averageLuminance">Average Luminance: 0 Nits cd/m2</span></small>
+        </div>
+      </section>
+
+      <div class="workspace">
+        <section class="panel visual">
+          <div class="panel-head">
+            <h2>Build Preview</h2>
+            <span class="pill" id="caseName">Case</span>
+          </div>
+          <div class="panel-body">
+            <div class="box-preview">
+              <div class="lightbox" id="lightboxPreview">
+                <canvas class="matrix-canvas" id="lightMatrix" aria-label="LED matrix preview"></canvas>
+              </div>
+            </div>
+            <div class="dimensions">
+              <div class="dimension">
+                <span>Composite Size</span>
+                <strong id="compositeSize">0 x 0 mm</strong>
+              </div>
+              <div class="dimension">
+                <span>Panel Cut Size</span>
+                <strong id="panelSize">0 x 0 mm</strong>
+              </div>
+              <div class="dimension">
+                <span>Packing</span>
+                <strong id="packingSize">0 x 0 x 0 cm</strong>
+              </div>
+              <div class="dimension">
+                <span>LED Layout</span>
+                <strong id="ledLayoutDetail">0 x 0</strong>
+              </div>
+              <div class="dimension">
+                <span>Power Leads</span>
+                <strong id="powerLeadDetail">0</strong>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Cart Links</h2>
+          </div>
+          <div class="panel-body">
+            <div class="cart-list" id="cartLinks"></div>
+            <div class="description-block">
+              <p class="description-title">Description</p>
+              <pre class="description-preview" id="descriptionPreview"></pre>
+            </div>
+            <div class="copy-row">
+              <input id="selectedUrl" readonly aria-label="Selected cart URL">
+              <button class="icon-button" id="copyUrl" type="button" title="Copy selected URL" aria-label="Copy selected URL">
+                ⧉
+              </button>
+            </div>
+            <div class="download-row">
+              <button class="plain-button" id="downloadCutFile" type="button">Download Cut file</button>
+            </div>
+            <div class="notice" id="copyNotice">Copied the selected cart URL.</div>
+            <div class="notice" id="cutFileNotice">
+              Cut file generated.
+              <a id="cutFileLink" href="#" download>Download cut file</a>
+              <span>or</span>
+              <a id="cutFileOpenLink" href="#" target="_blank" rel="noopener">open it in the browser</a>.
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" hidden>
+          <div class="panel-head">
+          <h2>Cost Components</h2>
+            <span class="pill" id="weightPill">0 kg</span>
+          </div>
+          <div class="panel-body">
+            <table>
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th class="num">Qty</th>
+                  <th class="num">Length / Size</th>
+                  <th class="num">Cost</th>
+                </tr>
+              </thead>
+              <tbody id="cuttingList"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Warnings</h2>
+            <span class="pill" id="panelCount">0 panels</span>
+          </div>
+          <div class="panel-body">
+            <div id="warnings"></div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const DATA = {
+      extrusions: [
+        {
+          name: "Vivalux 50mm Aluminium Lightbox",
+          joinersPerJoin: 1,
+          offset: 42.5,
+          hBraceOffset: 50,
+          unitCostPerM: 13,
+          weightPerM: 1.107,
+          barPitch: 80,
+          usesHBraces: false,
+          qcode: "Q91783-01",
+          xSectionArea: 0.0025,
+          packingDepthMm: 51,
+          visualBorderMm: 50,
+          luminanceEfficiency: 0.34
+        },
+        {
+          name: "Vivalux 80mm SS Aluminium Lightbox",
+          joinersPerJoin: 2,
+          offset: 47,
+          hBraceOffset: 55,
+          unitCostPerM: 18,
+          weightPerM: 1.519,
+          barPitch: 120,
+          usesHBraces: true,
+          qcode: "Q91783-01",
+          xSectionArea: 0.0044,
+          packingDepthMm: 81,
+          visualBorderMm: 55,
+          luminanceEfficiency: 0.27
+        },
+        {
+          name: "Vivalux 100mm SS Aluminium Lightbox",
+          joinersPerJoin: 2,
+          offset: 47,
+          hBraceOffset: 55,
+          unitCostPerM: 21,
+          weightPerM: 1.763,
+          barPitch: 120,
+          usesHBraces: true,
+          qcode: "Q91783-01",
+          xSectionArea: 0.0055,
+          packingDepthMm: 101,
+          visualBorderMm: 55,
+          luminanceEfficiency: 0.235
+        },
+        {
+          name: "Vivalux  100mm DS Aluminium Extrusion",
+          joinersPerJoin: 2,
+          offset: 4.8,
+          hBraceOffset: 10,
+          unitCostPerM: 17,
+          weightPerM: 1.437,
+          barPitch: 120,
+          usesHBraces: true,
+          qcode: "Q91783-01",
+          xSectionArea: 0.003,
+          packingDepthMm: 31,
+          visualBorderMm: 25,
+          luminanceEfficiency: 0.235
+        },
+        {
+          name: "No Frame",
+          joinersPerJoin: 0,
+          offset: 0,
+          hBraceOffset: 0,
+          unitCostPerM: 0,
+          weightPerM: 0,
+          barPitch: 120,
+          usesHBraces: false,
+          qcode: "Q91783-01",
+          xSectionArea: 0.001,
+          packingDepthMm: 26,
+          visualBorderMm: 0
+        }
+      ],
+      packingLengths: [
+        { name: "A Pipe Rack 5.6M", mm: 5601 },
+        { name: "B LWB 3M", mm: 3001 },
+        { name: "C Van/Tray 2.5M", mm: 2501 },
+        { name: "D Car 1.5M", mm: 1501 }
+      ],
+      colours: ["Black", "White", "Other", "Clear Anodised"],
+      skins: [
+        { id: "fortuneDyeSub", name: "Fortuna DyeSub", qcode: "Q54823-03" },
+        { id: "polarLightUv", name: "Polarlight UV", qcode: "Q54823-09" },
+        { id: "oversizeUvGleam", name: "Oversize UV Gleam", qcode: "Q118020-15" }
+      ],
+      powerSupplies: [
+        { id: "internal60", productName: "60 Watt internal Power Supply", qcode: "Q54823-08", unitWatts: 60, usableWatts: 48, unitCost: 16.57, mode: "internal" },
+        { id: "external192", productName: "HLG-240-12B 192W External Power Supply", qcode: "Q54823-09", unitWatts: 192, usableWatts: 144, unitCost: 73.63, mode: "external" }
+      ],
+      panels: [
+        { name: "Hygrow Honeycomb 4mm 1500x3000", width: 3000, height: 1500, cost: 138 },
+        { name: "Hygrow Honeycomb 4mm 1220x2440", width: 2440, height: 1220, cost: 100 }
+      ],
+      constants: {
+        boxQcode: "Q105242-02",
+        standardPanelQcode: "Q105242-03",
+        oversizePanelQcode: "Q105242-04",
+        fortuneDyeSubQcode: "Q54823-03",
+        polarLightUvQcode: "Q54823-09",
+        oversizeUvGleamQcode: "Q118020-15",
+        cartonQcode: "Q174686-01",
+        ledUnitCost: 0.2,
+        ledWatts: 0.5,
+        aluminiumKgRate: 7.8,
+        labourRate: 45,
+        labourMinutesPerLed: 0.75,
+        labourMinutesPerPowerSupply: 5,
+        labourFixedMinutes: 15,
+        labourMinutesPerExtraPanel: 10,
+        labourMinutesPerSqmPrimary: 20,
+        labourMinutesPerSqmSecondary: 10,
+        wireSundriesUnitCost: 5,
+        powderCoatingPerM: 6,
+        joinerCost: 1.5,
+        cornerCost: 1.5,
+        tensionLockCost: 7.5,
+        hBraceJoinerCost: 5.25,
+        hBraceCostPerM: 6.95,
+        hBraceWidth: 40,
+        panelKgPerSqm: 3.86,
+        hBraceKgPerM: 0.638,
+        cornerKg: 0.04,
+        joinerKg: 0.12,
+        tensionLockKg: 0.052,
+        ledKg: 0.004,
+        ledSpacing: 79.09,
+        luminanceLumensPerWatt: 101,
+        luminanceDivisor: 3.142,
+        luminanceEfficiencyByDepth: { 50: 0.34, 80: 0.27, 100: 0.235 },
+        skinSqmPrice: 65,
+        cartonSqmPrice: 10,
+        cartonGsm: 300,
+        packingFactor: 0.5
+      }
+    };
+
+    const form = document.getElementById("configForm");
+    const fields = Object.fromEntries([...form.elements].filter((el) => el.name).map((el) => [el.name, el]));
+    var packingLengthUserSelected = false;
+    const SHARED_SIZE_KEY = "vivalux-lightbox-shared-size-1000x2000";
+    const FORM_STATE_KEY = "vivalux-backlit-form-state";
+    const CUT_FILE_PASSWORD = "1958-1960";
+    const PRICE_MULTIPLIER = 1.4285714;
+
+    const money = new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: "AUD",
+      maximumFractionDigits: 0
+    });
+
+    function fmtMoney(value, digits = 0) {
+      return new Intl.NumberFormat("en-AU", {
+        style: "currency",
+        currency: "AUD",
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function fmtNumber(value, digits = 0) {
+      return new Intl.NumberFormat("en-AU", {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      }).format(Number.isFinite(value) ? value : 0);
+    }
+
+    function increasedPrice(value) {
+      const number = Number(value);
+      const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
+      return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+    }
+
+    function urlInt(value) {
+      return String(Math.ceil(Number.isFinite(value) ? value : 0));
+    }
+
+    function numberValue(name) {
+      return Number(fields[name].value) || 0;
+    }
+
+    function encodeParams(params) {
+      return Object.entries(params)
+        .filter(([, value]) => value !== undefined && value !== null && value !== "")
+        .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+        .join("&");
+    }
+
+    function cartUrl(params) {
+      return `https://vivad.com.au/shopping-cart?${encodeParams(params)}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    function option(select, text, value = text) {
+      const el = document.createElement("option");
+      el.value = value;
+      el.textContent = text;
+      select.appendChild(el);
+    }
+
+    function powerSupplyQuantity(powerWatts, supply) {
+      return Math.max(1, Math.ceil(powerWatts / (supply.usableWatts || supply.unitWatts)));
+    }
+
+    function powerSupplyLabel(supply, qty) {
+      return `QTY: ${qty} ${supply.productName} ${fmtMoney(increasedPrice(qty * supply.unitCost), 2)}`;
+    }
+
+    function luminanceEfficiency(extrusion) {
+      if (Number.isFinite(extrusion.luminanceEfficiency)) return extrusion.luminanceEfficiency;
+      const depth = Number(extrusion.name.match(/(\d+(?:\.\d+)?)\s*mm/i)?.[1]);
+      return DATA.constants.luminanceEfficiencyByDepth[depth] || 0;
+    }
+
+    function compositeMetrics(width, height, extrusion) {
+      const compositeWidth = Math.max(1, width - 2 * extrusion.offset);
+      const compositeHeight = Math.max(1, height - 2 * extrusion.offset);
+      return { compositeWidth, compositeHeight };
+    }
+
+    function ledStripCount(length) {
+      const rawCount = length / DATA.constants.ledSpacing;
+      const cuttingAllowance = rawCount > 12.19 ? 0.81 : 1.19;
+      return Math.max(1, Math.floor(rawCount - cuttingAllowance) + 1);
+    }
+
+    function pitchCount(length, extrusion) {
+      return Math.max(1, Math.ceil((length - 40) / extrusion.barPitch) + 1);
+    }
+
+    function ledLayoutFor(config) {
+      const {
+        compositeWidth,
+        compositeHeight,
+        panelWidth,
+        panelHeight,
+        extrusion,
+        horizontalBraces,
+        verticalBraces
+      } = config;
+
+      const horizontalAcross = ledStripCount(compositeWidth);
+      const horizontalDown = pitchCount(compositeHeight, extrusion);
+      const verticalAcross = pitchCount(compositeWidth, extrusion);
+      const verticalDown = ledStripCount(compositeHeight);
+
+      const horizontal = {
+        orientation: "Horizontal",
+        across: horizontalAcross,
+        down: horizontalDown,
+        barPitch: horizontalDown > 1 ? (compositeHeight - 40) / (horizontalDown - 1) : 0,
+        offset: (compositeWidth - (horizontalAcross - 1) * DATA.constants.ledSpacing) / 2
+      };
+      const vertical = {
+        orientation: "Vertical",
+        across: verticalAcross,
+        down: verticalDown,
+        barPitch: verticalAcross > 1 ? (compositeWidth - 40) / (verticalAcross - 1) : 0,
+        offset: (compositeHeight - (verticalDown - 1) * DATA.constants.ledSpacing) / 2
+      };
+
+      horizontal.ledQty = horizontal.across * horizontal.down;
+      vertical.ledQty = vertical.across * vertical.down;
+
+      let selected;
+      if (horizontalBraces > 0 && verticalBraces === 0) {
+        selected = horizontal;
+      } else if (verticalBraces > 0 && horizontalBraces === 0) {
+        selected = vertical;
+      } else {
+        selected = horizontal.ledQty <= vertical.ledQty ? horizontal : vertical;
+      }
+
+      return {
+        ...selected,
+        powerWatts: selected.ledQty * DATA.constants.ledWatts
+      };
+    }
+
+    function ledJoinAvoidPositions(layout, axis) {
+      if (axis === "x" && layout.orientation === "Vertical") {
+        return Array.from({ length: layout.across }, (_, index) => 20 + index * layout.barPitch);
+      }
+      if (axis === "y" && layout.orientation === "Horizontal") {
+        return Array.from({ length: layout.down }, (_, index) => 20 + index * layout.barPitch);
+      }
+      return [];
+    }
+
+    function midpointCandidatesFor(position, positions) {
+      const index = positions.findIndex((item) => Math.abs(item - position) < 0.001);
+      const candidates = [];
+      if (index > 0) candidates.push((positions[index - 1] + positions[index]) / 2);
+      if (index >= 0 && index < positions.length - 1) candidates.push((positions[index] + positions[index + 1]) / 2);
+      return candidates;
+    }
+
+    function adjacentMidpoints(positions) {
+      const sorted = [...new Set(positions.map((position) => Number(position.toFixed(4))))]
+        .sort((a, b) => a - b);
+      const midpoints = [];
+      for (let index = 1; index < sorted.length; index += 1) {
+        midpoints.push((sorted[index - 1] + sorted[index]) / 2);
+      }
+      return midpoints;
+    }
+
+    function adjustedJoinCenters(total, pieces, gap, avoidPositions) {
+      if (pieces <= 1) {
+        return { centers: [], segments: [total], adjusted: false };
+      }
+
+      const nominalSegment = joinedCutSize(total, pieces, gap);
+      const minimumSegment = Math.min(120, Math.max(1, nominalSegment * 0.35));
+      const midpointOptions = adjacentMidpoints(avoidPositions || []);
+      let adjusted = false;
+      const centers = [];
+
+      for (let join = 1; join < pieces; join += 1) {
+        const nominalCenter = join * nominalSegment + (join - 0.5) * gap;
+        const blockedPosition = avoidPositions.find((position) => Math.abs(position - nominalCenter) <= gap / 2 + 0.5);
+        let center = nominalCenter;
+
+        const previousLimit = centers.length ? centers[centers.length - 1] + gap + minimumSegment : minimumSegment + gap / 2;
+        const nextNominal = join < pieces - 1 ? (join + 1) * nominalSegment + (join + 0.5) * gap : total - minimumSegment - gap / 2;
+        const nextLimit = Math.min(total - minimumSegment - gap / 2, nextNominal - gap - minimumSegment);
+        const candidates = (midpointOptions.length ? midpointOptions : midpointCandidatesFor(blockedPosition, avoidPositions))
+          .filter((candidate) => candidate >= previousLimit && candidate <= nextLimit);
+
+        if (candidates.length) {
+          center = candidates.sort((a, b) => Math.abs(a - nominalCenter) - Math.abs(b - nominalCenter) || b - a)[0];
+          adjusted = adjusted || Math.abs(center - nominalCenter) > 0.001 || blockedPosition !== undefined;
+        }
+
+        centers.push(center);
+      }
+
+      const segments = [];
+      let cursor = 0;
+      for (const center of centers) {
+        const segmentEnd = center - gap / 2;
+        segments.push(Math.max(1, segmentEnd - cursor));
+        cursor = center + gap / 2;
+      }
+      segments.push(Math.max(1, total - cursor));
+
+      return { centers, segments, adjusted };
+    }
+
+    function panelSizeGroups(widths, heights) {
+      const groups = new Map();
+      for (const height of heights) {
+        for (const width of widths) {
+          const key = `${width.toFixed(2)}|${height.toFixed(2)}`;
+          const current = groups.get(key) || { width, height, count: 0 };
+          current.count += 1;
+          groups.set(key, current);
+        }
+      }
+      return [...groups.values()];
+    }
+
+    function fmtPanelDimension(value) {
+      return fmtNumber(roundedPanelDimension(value), 0);
+    }
+
+    function previewGeometry(config, preview) {
+      const ratio = Math.max(0.02, config.width / Math.max(1, config.height));
+      const host = preview && preview.parentElement;
+      const hostWidth = host && host.clientWidth ? Math.max(120, host.clientWidth - 48) : 520;
+      const hostHeight = host && host.clientHeight ? Math.max(120, host.clientHeight - 48) : 365;
+      const maxWidth = Math.min(hostWidth * 0.92, 680);
+      const maxHeight = Math.min(hostHeight, 365);
+      let width = maxWidth;
+      let height = width / ratio;
+
+      if (height > maxHeight) {
+        height = maxHeight;
+        width = height * ratio;
+      }
+
+      const shortSidePx = Math.max(1, Math.min(width, height));
+      const framePx = config.extrusion.visualBorderMm
+        ? clamp(Math.round(shortSidePx * config.extrusion.visualBorderMm / Math.max(1, Math.min(config.width, config.height))), 2, 24)
+        : 0;
+
+      return { ratio, width, height, framePx };
+    }
+
+    function previewFrameColor(config) {
+      const anodisedGrey = "#aeb5b2";
+      if (!config.powderCoating) return anodisedGrey;
+      if (config.colour === "White") return "#f2f2ed";
+      if (config.colourChoice === "Other") {
+        const custom = config.customColour.trim();
+        if (/^#([0-9a-f]{3}|[0-9a-f]{6})$/i.test(custom) || /^rgba?\(/i.test(custom) || /^[a-z]+$/i.test(custom)) {
+          return custom;
+        }
+        return "#435b82";
+      }
+      return "#202322";
+    }
+
+    function panelSizeLabel(groups, formatter) {
+      if (groups.length === 1) {
+        const group = groups[0];
+        return `${formatter(group.width)} x ${formatter(group.height)} mm`;
+      }
+      return groups
+        .map((group) => `${group.count} @ ${formatter(group.width)} x ${formatter(group.height)} mm`)
+        .join("; ");
+    }
+
+    function selectedPackingLength() {
+      return DATA.packingLengths.find((item) => item.name === fields.packingLength.value) || DATA.packingLengths[2];
+    }
+
+    function packingLengthForSize(width, height) {
+      const requiredLength = Math.max(width, height);
+      const sortedLengths = [...DATA.packingLengths].sort((a, b) => a.mm - b.mm);
+      return sortedLengths.find((item) => item.mm >= requiredLength) || sortedLengths[sortedLengths.length - 1];
+    }
+
+    function syncPackingLengthDefault() {
+      if (packingLengthUserSelected) return;
+      const width = Math.max(100, numberValue("width"));
+      const height = Math.max(100, numberValue("height"));
+      const packingLength = packingLengthForSize(width, height);
+      if (packingLength) fields.packingLength.value = packingLength.name;
+    }
+
+    function estimateCurrentPowerWatts() {
+      const extrusion = DATA.extrusions.find((item) => item.name === fields.extrusion.value) || DATA.extrusions[1];
+      const packingLength = selectedPackingLength();
+      const width = Math.max(100, Number(fields.width.value) || 0);
+      const height = Math.max(100, Number(fields.height.value) || 0);
+      const baseLight = compositeMetrics(width, height, extrusion);
+      const minPanelCols = Math.max(1, Math.ceil(baseLight.compositeWidth / packingLength.mm));
+      const minPanelRows = Math.max(1, Math.ceil(baseLight.compositeHeight / packingLength.mm));
+      const panelJoinGap = panelJoinGapForExtrusion(extrusion);
+      const panelLayout = selectPanelLayout(baseLight.compositeWidth, baseLight.compositeHeight, minPanelCols, minPanelRows, panelJoinGap);
+      const horizontalBraces = extrusion.usesHBraces ? panelLayout.rows - 1 : 0;
+      const verticalBraces = extrusion.usesHBraces ? panelLayout.cols - 1 : 0;
+      return ledLayoutFor({
+        ...baseLight,
+        panelWidth: panelLayout.cutWidth,
+        panelHeight: panelLayout.cutHeight,
+        extrusion,
+        horizontalBraces,
+        verticalBraces
+      }).powerWatts;
+    }
+
+    function updatePowerSupplyOptions(powerWatts = estimateCurrentPowerWatts()) {
+      const selected = fields.powerSupply.value || DATA.powerSupplies[0].id;
+      for (const optionEl of [...fields.powerSupply.children]) {
+        const supply = DATA.powerSupplies.find((item) => item.id === optionEl.value);
+        if (!supply) continue;
+        optionEl.textContent = powerSupplyLabel(supply, powerSupplyQuantity(powerWatts, supply));
+      }
+      fields.powerSupply.value = selected;
+    }
+
+    function setupOptions() {
+      DATA.extrusions.forEach((item) => option(fields.extrusion, item.name));
+      DATA.packingLengths.forEach((item) => option(fields.packingLength, item.name));
+      DATA.powerSupplies.forEach((item) => option(fields.powerSupply, item.productName, item.id));
+      DATA.colours.forEach((item) => option(fields.colour, item));
+      DATA.skins.forEach((item) => option(fields.skin, `${item.name} ${item.qcode}`, item.id));
+      fields.extrusion.value = "Vivalux 80mm SS Aluminium Lightbox";
+      fields.powerSupply.value = "internal60";
+      fields.colour.value = "Black";
+      fields.skin.value = DATA.skins[0].id;
+      loadSharedSize();
+      syncPackingLengthDefault();
+      updatePowerSupplyOptions();
+    }
+
+    function saveFormState() {
+      try {
+        const state = {};
+        form.querySelectorAll("select").forEach((el) => {
+          state[el.name || el.id] = el.value;
+        });
+        localStorage.setItem(FORM_STATE_KEY, JSON.stringify(state));
+      } catch {
+        /* Ignore storage errors in private or locked-down browser contexts. */
+      }
+    }
+
+    function restoreFormState() {
+      try {
+        const state = JSON.parse(localStorage.getItem(FORM_STATE_KEY) || "{}");
+        form.querySelectorAll("select").forEach((el) => {
+          const key = el.name || el.id;
+          if (Object.prototype.hasOwnProperty.call(state, key)) {
+            el.value = state[key];
+          }
+        });
+        if (Object.prototype.hasOwnProperty.call(state, "packingLength")) {
+          packingLengthUserSelected = true;
+        }
+      } catch {
+        /* Ignore malformed saved state. */
+      }
+    }
+
+    function sharedSizeFromUrl() {
+      if (typeof URLSearchParams === "undefined" || typeof window === "undefined") return null;
+      const params = new URLSearchParams(window.location.search);
+      const width = Number(params.get("width"));
+      const height = Number(params.get("height"));
+      return Number.isFinite(width) && Number.isFinite(height) && width >= 100 && height >= 100
+        ? { width, height }
+        : null;
+    }
+
+    function loadSharedSize() {
+      let size = sharedSizeFromUrl();
+      if (!size) {
+        try {
+          size = JSON.parse(localStorage.getItem(SHARED_SIZE_KEY) || "null");
+        } catch {
+          size = null;
+        }
+      }
+      if (!size || !Number.isFinite(size.width) || !Number.isFinite(size.height)) return;
+      fields.width.value = Math.round(Math.max(100, size.width));
+      fields.height.value = Math.round(Math.max(100, size.height));
+    }
+
+    function storeSharedSize(saveToStorage = true) {
+      const width = Math.max(100, numberValue("width"));
+      const height = Math.max(100, numberValue("height"));
+      if (saveToStorage) {
+        try {
+          localStorage.setItem(SHARED_SIZE_KEY, JSON.stringify({ width, height }));
+        } catch {}
+      }
+      if (document.querySelectorAll) {
+        document.querySelectorAll(".app-tabs a[data-size-link], .page-switch a").forEach((link) => {
+          const base = link.getAttribute("href").split("?")[0];
+          link.href = `${base}?width=${encodeURIComponent(Math.round(width))}&height=${encodeURIComponent(Math.round(height))}`;
+        });
+      }
+    }
+
+    function syncFinishControls() {
+      if (!fields.powderCoating.checked) {
+        fields.colour.value = "Clear Anodised";
+        fields.colour.disabled = true;
+        fields.otherColour.disabled = true;
+        document.getElementById("otherColourField").hidden = true;
+        return;
+      }
+
+      fields.colour.disabled = false;
+      if (fields.colour.value === "Clear Anodised") {
+        fields.colour.value = "Black";
+      }
+    }
+
+    function currentConfig() {
+      const colourChoice = fields.colour.value || "Black";
+      const customColour = (fields.otherColour.value || "").trim();
+      return {
+        shortName: fields.shortName.value.trim(),
+        quantity: Math.max(1, Math.round(numberValue("quantity"))),
+        extrusion: DATA.extrusions.find((item) => item.name === fields.extrusion.value) || DATA.extrusions[1],
+        width: Math.max(100, numberValue("width")),
+        height: Math.max(100, numberValue("height")),
+        packingLength: selectedPackingLength(),
+        packingMethod: fields.packingMethod.value === "disassembled" ? "disassembled" : "assembled",
+        powerSupply: DATA.powerSupplies.find((item) => item.id === fields.powerSupply.value) || DATA.powerSupplies[0],
+        exitLeadFrom: fields.exitLeadFrom.value || "TBA",
+        leadLocation: fields.leadLocation.value || "TBA",
+        powderCoating: fields.powderCoating.checked,
+        colourChoice,
+        customColour,
+        colour: colourChoice === "Other" ? customColour || "Other" : colourChoice,
+        skin: DATA.skins.find((item) => item.id === fields.skin.value) || DATA.skins[0],
+        margin: 2.4,
+        skinRate: DATA.constants.skinSqmPrice
+      };
+    }
+
+    function panelJoinGapForExtrusion(extrusion) {
+      return extrusion.name === "Vivalux 50mm Aluminium Lightbox" ? 0 : 25;
+    }
+
+    function joinedCutSize(total, pieces, joinGap = 25) {
+      return Math.max(1, (total - joinGap * (pieces - 1)) / pieces);
+    }
+
+    function selectPanelLayout(compositeWidth, compositeHeight, minCols, minRows, joinGap = 25) {
+      const candidates = [];
+      for (const panel of DATA.panels) {
+        const orientations = [
+          { orientation: "Normal", width: panel.width, height: panel.height },
+          { orientation: "Rotated", width: panel.height, height: panel.width }
+        ];
+
+        for (const layout of orientations) {
+          const cols = Math.max(minCols, Math.ceil((compositeWidth + joinGap) / (layout.width + joinGap)));
+          const rows = Math.max(minRows, Math.ceil((compositeHeight + joinGap) / (layout.height + joinGap)));
+          const cutWidth = joinedCutSize(compositeWidth, cols, joinGap);
+          const cutHeight = joinedCutSize(compositeHeight, rows, joinGap);
+          if (cutWidth > layout.width || cutHeight > layout.height) continue;
+
+          const colsPerSheet = Math.max(1, Math.floor(layout.width / cutWidth));
+          const rowsPerSheet = Math.max(1, Math.floor(layout.height / cutHeight));
+          const perSheet = colsPerSheet * rowsPerSheet;
+          const pieceCount = cols * rows;
+          const costPerPanel = panel.cost / perSheet;
+          candidates.push({
+            panel: {
+              ...panel,
+              orientation: layout.orientation,
+              colsPerSheet,
+              rowsPerSheet,
+              perSheet,
+              panelQty: 1 / perSheet,
+              costPerPanel
+            },
+            cols,
+            rows,
+            cutWidth,
+            cutHeight,
+            pieceCount,
+            totalCost: pieceCount * costPerPanel
+          });
+        }
+      }
+
+      if (!candidates.length) {
+        const smallestSide = Math.min(...DATA.panels.flatMap((panel) => [panel.width, panel.height]));
+        const cols = Math.max(minCols, Math.ceil((compositeWidth + joinGap) / (smallestSide + joinGap)));
+        const rows = Math.max(minRows, Math.ceil((compositeHeight + joinGap) / (smallestSide + joinGap)));
+        const cutWidth = joinedCutSize(compositeWidth, cols, joinGap);
+        const cutHeight = joinedCutSize(compositeHeight, rows, joinGap);
+
+        for (const panel of DATA.panels) {
+          const orientations = [
+            { orientation: "Normal", width: panel.width, height: panel.height },
+            { orientation: "Rotated", width: panel.height, height: panel.width }
+          ];
+          for (const layout of orientations) {
+            if (cutWidth > layout.width || cutHeight > layout.height) continue;
+            const colsPerSheet = Math.max(1, Math.floor(layout.width / cutWidth));
+            const rowsPerSheet = Math.max(1, Math.floor(layout.height / cutHeight));
+            const perSheet = colsPerSheet * rowsPerSheet;
+            const pieceCount = cols * rows;
+            const costPerPanel = panel.cost / perSheet;
+            candidates.push({
+              panel: {
+                ...panel,
+                orientation: layout.orientation,
+                colsPerSheet,
+                rowsPerSheet,
+                perSheet,
+                panelQty: 1 / perSheet,
+                costPerPanel
+              },
+              cols,
+              rows,
+              cutWidth,
+              cutHeight,
+              pieceCount,
+              totalCost: pieceCount * costPerPanel
+            });
+          }
+        }
+      }
+
+      return candidates.sort((a, b) =>
+        a.pieceCount - b.pieceCount ||
+        a.totalCost - b.totalCost ||
+        a.cols - b.cols ||
+        a.rows - b.rows
+      )[0] || {
+        panel: {
+          ...DATA.panels[0],
+          orientation: "Custom",
+          colsPerSheet: 1,
+          rowsPerSheet: 1,
+          perSheet: 1,
+          panelQty: 1,
+          costPerPanel: DATA.panels[0].cost
+        },
+        cols: minCols,
+        rows: minRows,
+        cutWidth: joinedCutSize(compositeWidth, minCols, joinGap),
+        cutHeight: joinedCutSize(compositeHeight, minRows, joinGap),
+        pieceCount: minCols * minRows,
+        totalCost: minCols * minRows * DATA.panels[0].cost
+      };
+    }
+
+    function calculate() {
+      const cfg = currentConfig();
+      const c = DATA.constants;
+      const baseLight = compositeMetrics(cfg.width, cfg.height, cfg.extrusion);
+      const compositeWidth = baseLight.compositeWidth;
+      const compositeHeight = baseLight.compositeHeight;
+      const minPanelCols = Math.max(1, Math.ceil(compositeWidth / cfg.packingLength.mm));
+      const minPanelRows = Math.max(1, Math.ceil(compositeHeight / cfg.packingLength.mm));
+      const panelJoinGap = panelJoinGapForExtrusion(cfg.extrusion);
+      const panelLayout = selectPanelLayout(compositeWidth, compositeHeight, minPanelCols, minPanelRows, panelJoinGap);
+      const joinsWidth = panelLayout.cols - 1;
+      const joinsHeight = panelLayout.rows - 1;
+      const panelCount = panelLayout.pieceCount;
+      const panelWidth = panelLayout.cutWidth;
+      const panelHeight = panelLayout.cutHeight;
+      const verticalBraceLines = cfg.extrusion.usesHBraces ? joinsWidth : 0;
+      const horizontalBraceRows = cfg.extrusion.usesHBraces ? joinsHeight : 0;
+      const horizontalBraceSegments = horizontalBraceRows * (verticalBraceLines + 1);
+      const verticalBraceSegments = verticalBraceLines;
+      const rawHBraceLength = horizontalBraceRows
+        ? Math.max(0, Math.round((cfg.width - 2 * cfg.extrusion.hBraceOffset - c.hBraceWidth * verticalBraceLines) / (verticalBraceLines + 1)))
+        : 0;
+      const rawVBraceLength = verticalBraceSegments
+        ? Math.max(0, Math.round(cfg.height - 2 * cfg.extrusion.hBraceOffset))
+        : 0;
+      const hBracePiecesPerSegment = rawHBraceLength ? Math.max(1, Math.ceil(rawHBraceLength / cfg.packingLength.mm)) : 0;
+      const vBracePiecesPerSegment = rawVBraceLength ? Math.max(1, Math.ceil(rawVBraceLength / cfg.packingLength.mm)) : 0;
+      const horizontalBraces = horizontalBraceSegments * hBracePiecesPerSegment;
+      const verticalBraces = verticalBraceSegments * vBracePiecesPerSegment;
+      const hBraceLength = hBracePiecesPerSegment
+        ? Math.max(0, Math.round(rawHBraceLength / hBracePiecesPerSegment))
+        : 0;
+      const vBraceLength = vBracePiecesPerSegment
+        ? Math.max(0, Math.round(rawVBraceLength / vBracePiecesPerSegment))
+        : 0;
+      const ledLayout = ledLayoutFor({
+        compositeWidth,
+        compositeHeight,
+        panelWidth,
+        panelHeight,
+        extrusion: cfg.extrusion,
+        horizontalBraces,
+        verticalBraces
+      });
+      const orientation = ledLayout.orientation;
+      const ledAcross = ledLayout.across;
+      const ledDown = ledLayout.down;
+      const ledQty = ledLayout.ledQty;
+      const powerWatts = ledLayout.powerWatts;
+      const ledBarPitch = ledLayout.barPitch;
+      const ledOffset = ledLayout.offset;
+      const verticalJoinGeometry = adjustedJoinCenters(compositeWidth, panelLayout.cols, panelJoinGap, ledJoinAvoidPositions(ledLayout, "x"));
+      const horizontalJoinGeometry = adjustedJoinCenters(compositeHeight, panelLayout.rows, panelJoinGap, ledJoinAvoidPositions(ledLayout, "y"));
+      const panelWidths = verticalJoinGeometry.segments;
+      const panelHeights = horizontalJoinGeometry.segments;
+      const panelGroups = panelSizeGroups(panelWidths, panelHeights);
+      const panelDisplaySize = panelSizeLabel(panelGroups, fmtPanelDimension);
+      const panelUrlSize = panelSizeLabel(panelGroups, urlInt);
+      const supplyQty = powerSupplyQuantity(powerWatts, cfg.powerSupply);
+      const chosenPowerCost = supplyQty * cfg.powerSupply.unitCost;
+      const powerLeadQty = cfg.powerSupply.mode === "external" ? supplyQty : Math.ceil(supplyQty / 6);
+      const frameJoinsWidth = Math.max(0, Math.ceil(cfg.width / cfg.packingLength.mm) - 1);
+      const frameJoinsHeight = Math.max(0, Math.ceil(cfg.height / cfg.packingLength.mm) - 1);
+      const frameTopBottomQty = 2 * (frameJoinsWidth + 1);
+      const frameSideQty = 2 * (frameJoinsHeight + 1);
+      const frameTopBottomLength = cfg.width / (frameJoinsWidth + 1);
+      const frameSideLength = cfg.height / (frameJoinsHeight + 1);
+      const extrusionTopBottomM = (cfg.width * 2) / 1000;
+      const extrusionSideM = (cfg.height * 2) / 1000;
+      const frameM = extrusionTopBottomM + extrusionSideM;
+      const aluminiumWeight = frameM * cfg.extrusion.weightPerM;
+      const frameCost = frameM * cfg.extrusion.unitCostPerM;
+      const joinerQty = (frameJoinsWidth + frameJoinsHeight) * cfg.extrusion.joinersPerJoin * 2;
+      const cornersQty = cfg.extrusion.name === "No Frame" ? 0 : 8;
+      const horizontalBraceM = (horizontalBraces * hBraceLength) / 1000;
+      const verticalBraceM = (verticalBraces * vBraceLength) / 1000;
+      const hBraceM = horizontalBraceM + verticalBraceM;
+      const hBraceJoiners =
+        horizontalBraceSegments * Math.max(0, hBracePiecesPerSegment - 1) +
+        verticalBraceSegments * Math.max(0, vBracePiecesPerSegment - 1);
+      const tensionLockQty = (horizontalBraces + verticalBraces) * 2;
+      const tensionLockCost = tensionLockQty * c.tensionLockCost;
+      const panel = panelLayout.panel;
+      const panelCost = panelLayout.totalCost;
+      const ledCost = ledQty * c.ledUnitCost;
+      const powderCost = cfg.powderCoating ? frameM * c.powderCoatingPerM : 0;
+      const printArea = (cfg.width * cfg.height) / 1000000;
+      const powerDensity = printArea ? powerWatts / printArea : 0;
+      const averageLuminance = printArea ? powerWatts * c.luminanceLumensPerWatt * luminanceEfficiency(cfg.extrusion) / (c.luminanceDivisor * printArea) : 0;
+      const skinPrice = printArea * cfg.skinRate;
+      const labourMinutes =
+        ledQty * c.labourMinutesPerLed +
+        supplyQty * c.labourMinutesPerPowerSupply +
+        c.labourFixedMinutes +
+        Math.max(0, panelCount - 1) * c.labourMinutesPerExtraPanel +
+        printArea * c.labourMinutesPerSqmPrimary +
+        printArea * c.labourMinutesPerSqmSecondary;
+      const labourHours = labourMinutes / 60;
+      const labourCost = labourHours * c.labourRate;
+      const wireSundriesQty = 2 * (cfg.width + cfg.height) / 1000;
+      const wireCost = wireSundriesQty * c.wireSundriesUnitCost;
+      const rawBuildCost =
+        frameCost +
+        panelCost +
+        ledCost +
+        chosenPowerCost +
+        powderCost +
+        wireCost +
+        labourCost +
+        joinerQty * c.joinerCost +
+        cornersQty * c.cornerCost +
+        hBraceM * c.hBraceCostPerM +
+        hBraceJoiners * c.hBraceJoinerCost +
+        tensionLockCost;
+      const boxPrice = rawBuildCost * cfg.margin;
+      const separatedPanelMaxMm = Math.max(panelLayout.cutWidth, panelLayout.cutHeight);
+      const separatedPanelMinMm = Math.min(panelLayout.cutWidth, panelLayout.cutHeight);
+      const hasFramePackingJoins = frameJoinsWidth > 0 || frameJoinsHeight > 0;
+      const disassembledPackingLengthCm = Math.ceil((hasFramePackingJoins ? separatedPanelMaxMm : Math.max(cfg.width, cfg.height)) / 10);
+      const disassembledPackingWidthCm = Math.ceil(separatedPanelMinMm / 10);
+      const disassembledPackingHeightCm = Math.ceil(cfg.extrusion.packingDepthMm / 10) + panelCount * 3;
+      const assembledPackingLengthCm = Math.ceil(Math.max(cfg.width, cfg.height) / 10);
+      const assembledPackingWidthCm = Math.ceil(Math.min(cfg.width, cfg.height) / 10);
+      const assembledPackingHeightCm = 10;
+      const packingLengthCm = cfg.packingMethod === "disassembled" ? disassembledPackingLengthCm : assembledPackingLengthCm;
+      const packingWidthCm = cfg.packingMethod === "disassembled" ? disassembledPackingWidthCm : assembledPackingWidthCm;
+      const packingHeightCm = cfg.packingMethod === "disassembled" ? disassembledPackingHeightCm : assembledPackingHeightCm;
+      const cartonArea = 2 * ((packingLengthCm / 100) * (packingWidthCm / 100) + (packingLengthCm / 100) * (packingHeightCm / 100) + (packingWidthCm / 100) * (packingHeightCm / 100));
+      const cartonPrice = cartonArea * c.cartonSqmPrice;
+      const panelWeightKg = panelGroups.reduce((total, group) =>
+        total + group.count * (group.width * group.height / 1000000) * c.panelKgPerSqm, 0);
+      const physicalWeightKg = Math.max(1,
+        aluminiumWeight +
+        panelWeightKg +
+        hBraceM * c.hBraceKgPerM +
+        joinerQty * c.joinerKg +
+        cornersQty * c.cornerKg +
+        tensionLockQty * c.tensionLockKg +
+        ledQty * c.ledKg
+      );
+      const weightKg = Math.round(physicalWeightKg);
+      const unitCost = boxPrice + skinPrice + cartonPrice;
+      const totalCost = unitCost * cfg.quantity * 1.1;
+      const finishDescription = cfg.powderCoating
+        ? `Frame Finish: Powder coated ${cfg.colour}`
+        : "Frame Finish: Clear anodised aluminium";
+      const description = [
+        `Box Size: ${urlInt(cfg.width)}mm (w) x ${urlInt(cfg.height)}mm (h)`,
+        `Extrusion: ${cfg.extrusion.name}`,
+        `Packing: ${cfg.packingMethod === "disassembled" ? "Send Disassembled" : "Send Assembled"}`,
+        `Packing Dimensions: ${packingLengthCm}cm x ${packingWidthCm}cm x ${packingHeightCm}cm, Weight ${urlInt(weightKg)}kg`,
+        finishDescription,
+        `QTY: ${ledQty} LEDs in bars running ${orientation}`,
+        `QTY: ${supplyQty} ${cfg.powerSupply.productName}`,
+        `QTY: ${powerLeadQty} Power Lead${powerLeadQty === 1 ? "" : "s"} - Exit from ${cfg.exitLeadFrom}, Location ${cfg.leadLocation}`,
+        `Total Power: ${urlInt(powerWatts)} Watts`,
+        panelGroups.length === 1
+          ? `QTY: ${panelCount} ${panel.name} Panels @ ${panelUrlSize}`
+          : `${panel.name} Panels: ${panelUrlSize}`,
+        horizontalBraces ? `${horizontalBraces} Horizontal Cross braces ${urlInt(hBraceLength)} mm` : "",
+        verticalBraces ? `${verticalBraces} Vertical Cross braces ${urlInt(vBraceLength)} mm` : "",
+        `LEDS ${ledAcross} Across ${ledDown} Down`,
+        `W= ${urlInt(panelWidth)}, H= ${urlInt(panelHeight)}, Offset = ${urlInt(ledOffset)} Bar Pitch= ${urlInt(ledBarPitch)}`
+      ].filter(Boolean).join("\r\n");
+
+      return {
+        cfg,
+        compositeWidth,
+        compositeHeight,
+        joinsWidth,
+        joinsHeight,
+        panelJoinGap,
+        panelCols: panelLayout.cols,
+        panelRows: panelLayout.rows,
+        panelWidths,
+        panelHeights,
+        panelDisplaySize,
+        panelJoinCentersX: verticalJoinGeometry.centers,
+        panelJoinCentersY: horizontalJoinGeometry.centers,
+        panelJoinAdjusted: verticalJoinGeometry.adjusted || horizontalJoinGeometry.adjusted,
+        panelCount,
+        panelWidth,
+        panelHeight,
+        horizontalBraces,
+        verticalBraces,
+        hBraceLength,
+        vBraceLength,
+        ledOrientation: orientation,
+        ledAcross,
+        ledDown,
+        ledQty,
+        powerWatts,
+        powerDensity,
+        averageLuminance,
+        supplyQty,
+        powerLeadQty,
+        panel,
+        ledBarPitch,
+        ledOffset,
+        printArea,
+        labourHours,
+        labourCost,
+        wireSundriesQty,
+        wireCost,
+        skinPrice,
+        printPrice: skinPrice,
+        cartonPrice,
+        rawBuildCost,
+        boxPrice,
+        unitCost,
+        totalCost,
+        weightKg,
+        packingLengthCm,
+        packingWidthCm,
+        packingHeightCm,
+        description,
+        cuttingLines: [
+          { item: `${cfg.extrusion.name} for T and B`, qty: frameTopBottomQty, size: `${fmtNumber(frameTopBottomLength, 0)} mm`, cost: frameCost * (extrusionTopBottomM / frameM || 0) },
+          { item: `${cfg.extrusion.name} for sides`, qty: frameSideQty, size: `${fmtNumber(frameSideLength, 0)} mm`, cost: frameCost * (extrusionSideM / frameM || 0) },
+          { item: "H-Brace for horizontal", qty: horizontalBraces, size: `${fmtNumber(hBraceLength, 0)} mm`, cost: horizontalBraceM * c.hBraceCostPerM },
+          { item: "H-Brace for vertical", qty: verticalBraces, size: `${fmtNumber(vBraceLength, 0)} mm`, cost: verticalBraceM * c.hBraceCostPerM },
+          { item: "Tension Locks", qty: tensionLockQty, size: "each", cost: tensionLockCost },
+          { item: "Corners", qty: cornersQty, size: "each", cost: cornersQty * c.cornerCost },
+          { item: "Frame joiners", qty: joinerQty, size: "each", cost: joinerQty * c.joinerCost },
+          { item: "H Brace Joiners", qty: hBraceJoiners, size: "each", cost: hBraceJoiners * c.hBraceJoinerCost },
+          { item: panel.name, qty: panelCount, size: panelDisplaySize, cost: panelCost },
+          { item: "LED 0.5 Watt 12V", qty: ledQty, size: `${fmtNumber(powerWatts, 1)} W`, cost: ledCost },
+          { item: cfg.powerSupply.productName, qty: supplyQty, size: cfg.powerSupply.mode, cost: chosenPowerCost },
+          { item: "Power Leads", qty: powerLeadQty, size: `${cfg.exitLeadFrom}, ${cfg.leadLocation}`, cost: 0 },
+          { item: "Hours", qty: labourHours, size: `${fmtNumber(c.labourRate, 0)} / hr`, cost: labourCost },
+          { item: "Wire and Sunderies", qty: wireSundriesQty, size: `${fmtNumber(c.wireSundriesUnitCost, 0)} each`, cost: wireCost },
+          { item: `${cfg.colour} Powder Coating of frame`, qty: cfg.powderCoating ? 1 : 0, size: cfg.colour, cost: powderCost }
+        ].filter((line) => line.qty > 0)
+      };
+    }
+
+    function drawLightMatrix(result) {
+      const canvas = document.getElementById("lightMatrix");
+      if (!canvas || typeof canvas.getContext !== "function" || typeof canvas.getBoundingClientRect !== "function") return;
+
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(1, Math.round(rect.width));
+      const height = Math.max(1, Math.round(rect.height));
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+
+      const scaleX = width / result.compositeWidth;
+      const scaleY = height / result.compositeHeight;
+      const joinAllowance = result.panelJoinGap ?? 25;
+      const panelGapX = result.panelCols > 1 && joinAllowance > 0 ? joinAllowance * scaleX : 0;
+      const panelGapY = result.panelRows > 1 && joinAllowance > 0 ? joinAllowance * scaleY : 0;
+      const panelX = [];
+      const panelY = [];
+      let xCursor = 0;
+      let yCursor = 0;
+      for (const segmentWidth of result.panelWidths) {
+        panelX.push(xCursor);
+        xCursor += segmentWidth + joinAllowance;
+      }
+      for (const segmentHeight of result.panelHeights) {
+        panelY.push(yCursor);
+        yCursor += segmentHeight + joinAllowance;
+      }
+
+      ctx.fillStyle = "rgba(255, 255, 245, 0.82)";
+      ctx.fillRect(0, 0, width, height);
+
+      for (let row = 0; row < result.panelRows; row += 1) {
+        for (let col = 0; col < result.panelCols; col += 1) {
+          const x = panelX[col] * scaleX;
+          const y = panelY[row] * scaleY;
+          const w = result.panelWidths[col] * scaleX;
+          const h = result.panelHeights[row] * scaleY;
+          ctx.fillStyle = (row + col) % 2 === 0 ? "rgba(255, 255, 255, 0.88)" : "rgba(250, 252, 247, 0.88)";
+          ctx.fillRect(x, y, w, h);
+          ctx.strokeStyle = "rgba(0, 122, 95, 0.28)";
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
+        }
+      }
+
+      if (result.panelCols > 1 || result.panelRows > 1) {
+        ctx.fillStyle = "rgba(24, 33, 31, 0.16)";
+        ctx.strokeStyle = "rgba(24, 33, 31, 0.5)";
+        ctx.lineWidth = 1;
+        for (let col = 1; col < result.panelCols; col += 1) {
+          const x = (panelX[col] - joinAllowance) * scaleX;
+          if (joinAllowance > 0) {
+            ctx.fillRect(x, 0, Math.max(1, panelGapX), height);
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(Math.round(x) + 0.5, 0);
+            ctx.lineTo(Math.round(x) + 0.5, height);
+            ctx.stroke();
+          }
+        }
+        for (let row = 1; row < result.panelRows; row += 1) {
+          const y = (panelY[row] - joinAllowance) * scaleY;
+          if (joinAllowance > 0) {
+            ctx.fillRect(0, y, width, Math.max(1, panelGapY));
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(0, Math.round(y) + 0.5);
+            ctx.lineTo(width, Math.round(y) + 0.5);
+            ctx.stroke();
+          }
+        }
+      }
+
+      const dotRadius = Math.max(1.4, Math.min(4.2, Math.min(width / Math.max(1, result.ledAcross), height / Math.max(1, result.ledDown)) * 0.14));
+      ctx.shadowColor = "rgba(255, 193, 7, 0.75)";
+      ctx.shadowBlur = Math.max(4, dotRadius * 2.5);
+      ctx.fillStyle = "#ffc928";
+
+      for (let yIndex = 0; yIndex < result.ledDown; yIndex += 1) {
+        for (let xIndex = 0; xIndex < result.ledAcross; xIndex += 1) {
+          let ledX;
+          let ledY;
+          if (result.ledOrientation === "Horizontal") {
+            ledX = result.ledOffset + xIndex * DATA.constants.ledSpacing;
+            ledY = 20 + yIndex * result.ledBarPitch;
+          } else {
+            ledX = 20 + xIndex * result.ledBarPitch;
+            ledY = result.ledOffset + yIndex * DATA.constants.ledSpacing;
+          }
+
+          ctx.beginPath();
+          ctx.arc(ledX * scaleX, ledY * scaleY, dotRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.82)";
+      ctx.lineWidth = 1;
+      for (let yIndex = 0; yIndex < result.ledDown; yIndex += 1) {
+        ctx.beginPath();
+        for (let xIndex = 0; xIndex < result.ledAcross; xIndex += 1) {
+          const ledX = result.ledOrientation === "Horizontal"
+            ? result.ledOffset + xIndex * DATA.constants.ledSpacing
+            : 20 + xIndex * result.ledBarPitch;
+          const ledY = result.ledOrientation === "Horizontal"
+            ? 20 + yIndex * result.ledBarPitch
+            : result.ledOffset + yIndex * DATA.constants.ledSpacing;
+          const px = ledX * scaleX;
+          const py = ledY * scaleY;
+          if (xIndex === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    const STROKE_FONT = {
+      "A": [[0, 1, 0.5, 0], [0.5, 0, 1, 1], [0.25, 0.55, 0.75, 0.55]],
+      "B": [[0, 0, 0, 1], [0, 0, 0.72, 0], [0.72, 0, 0.9, 0.18], [0.9, 0.18, 0.72, 0.5], [0, 0.5, 0.72, 0.5], [0.72, 0.5, 0.9, 0.78], [0.9, 0.78, 0.72, 1], [0.72, 1, 0, 1]],
+      "C": [[0.9, 0.12, 0.72, 0], [0.72, 0, 0.18, 0], [0.18, 0, 0, 0.2], [0, 0.2, 0, 0.8], [0, 0.8, 0.18, 1], [0.18, 1, 0.72, 1], [0.72, 1, 0.9, 0.88]],
+      "D": [[0, 0, 0, 1], [0, 0, 0.68, 0], [0.68, 0, 0.95, 0.25], [0.95, 0.25, 0.95, 0.75], [0.95, 0.75, 0.68, 1], [0.68, 1, 0, 1]],
+      "E": [[0.9, 0, 0, 0], [0, 0, 0, 1], [0, 0.5, 0.68, 0.5], [0, 1, 0.9, 1]],
+      "F": [[0, 0, 0, 1], [0, 0, 0.9, 0], [0, 0.5, 0.68, 0.5]],
+      "G": [[0.9, 0.15, 0.72, 0], [0.72, 0, 0.18, 0], [0.18, 0, 0, 0.2], [0, 0.2, 0, 0.8], [0, 0.8, 0.18, 1], [0.18, 1, 0.72, 1], [0.72, 1, 0.9, 0.82], [0.9, 0.82, 0.9, 0.58], [0.9, 0.58, 0.48, 0.58]],
+      "H": [[0, 0, 0, 1], [1, 0, 1, 1], [0, 0.5, 1, 0.5]],
+      "I": [[0.5, 0, 0.5, 1], [0.2, 0, 0.8, 0], [0.2, 1, 0.8, 1]],
+      "J": [[0.85, 0, 0.85, 0.78], [0.85, 0.78, 0.65, 1], [0.65, 1, 0.2, 1], [0.2, 1, 0, 0.82]],
+      "K": [[0, 0, 0, 1], [1, 0, 0, 0.55], [0, 0.55, 1, 1]],
+      "L": [[0, 0, 0, 1], [0, 1, 0.9, 1]],
+      "M": [[0, 1, 0, 0], [0, 0, 0.5, 0.55], [0.5, 0.55, 1, 0], [1, 0, 1, 1]],
+      "N": [[0, 1, 0, 0], [0, 0, 1, 1], [1, 1, 1, 0]],
+      "O": [[0.18, 0, 0.82, 0], [0.82, 0, 1, 0.2], [1, 0.2, 1, 0.8], [1, 0.8, 0.82, 1], [0.82, 1, 0.18, 1], [0.18, 1, 0, 0.8], [0, 0.8, 0, 0.2], [0, 0.2, 0.18, 0]],
+      "P": [[0, 1, 0, 0], [0, 0, 0.76, 0], [0.76, 0, 0.95, 0.22], [0.95, 0.22, 0.76, 0.5], [0.76, 0.5, 0, 0.5]],
+      "Q": [[0.18, 0, 0.82, 0], [0.82, 0, 1, 0.2], [1, 0.2, 1, 0.78], [1, 0.78, 0.82, 1], [0.82, 1, 0.18, 1], [0.18, 1, 0, 0.78], [0, 0.78, 0, 0.2], [0, 0.2, 0.18, 0], [0.58, 0.65, 1, 1]],
+      "R": [[0, 1, 0, 0], [0, 0, 0.76, 0], [0.76, 0, 0.95, 0.22], [0.95, 0.22, 0.76, 0.5], [0.76, 0.5, 0, 0.5], [0.35, 0.5, 1, 1]],
+      "S": [[0.9, 0.08, 0.72, 0], [0.72, 0, 0.18, 0], [0.18, 0, 0, 0.18], [0, 0.18, 0.2, 0.48], [0.2, 0.48, 0.72, 0.52], [0.72, 0.52, 0.95, 0.78], [0.95, 0.78, 0.72, 1], [0.72, 1, 0.15, 1], [0.15, 1, 0, 0.9]],
+      "T": [[0, 0, 1, 0], [0.5, 0, 0.5, 1]],
+      "U": [[0, 0, 0, 0.78], [0, 0.78, 0.2, 1], [0.2, 1, 0.8, 1], [0.8, 1, 1, 0.78], [1, 0.78, 1, 0]],
+      "V": [[0, 0, 0.5, 1], [0.5, 1, 1, 0]],
+      "W": [[0, 0, 0.2, 1], [0.2, 1, 0.5, 0.45], [0.5, 0.45, 0.8, 1], [0.8, 1, 1, 0]],
+      "X": [[0, 0, 1, 1], [1, 0, 0, 1]],
+      "Y": [[0, 0, 0.5, 0.45], [1, 0, 0.5, 0.45], [0.5, 0.45, 0.5, 1]],
+      "Z": [[0, 0, 1, 0], [1, 0, 0, 1], [0, 1, 1, 1]],
+      "0": [[0.18, 0, 0.82, 0], [0.82, 0, 1, 0.2], [1, 0.2, 1, 0.8], [1, 0.8, 0.82, 1], [0.82, 1, 0.18, 1], [0.18, 1, 0, 0.8], [0, 0.8, 0, 0.2], [0, 0.2, 0.18, 0], [0.22, 0.82, 0.78, 0.18]],
+      "1": [[0.5, 0, 0.5, 1], [0.25, 0.25, 0.5, 0], [0.25, 1, 0.78, 1]],
+      "2": [[0.05, 0.2, 0.25, 0], [0.25, 0, 0.82, 0], [0.82, 0, 1, 0.22], [1, 0.22, 0, 1], [0, 1, 1, 1]],
+      "3": [[0.05, 0.08, 0.85, 0.08], [0.85, 0.08, 1, 0.3], [1, 0.3, 0.72, 0.5], [0.72, 0.5, 1, 0.72], [1, 0.72, 0.82, 0.95], [0.82, 0.95, 0.05, 0.95]],
+      "4": [[0.82, 0, 0.82, 1], [0.82, 0.58, 0, 0.58], [0, 0.58, 0.72, 0]],
+      "5": [[1, 0, 0.1, 0], [0.1, 0, 0.02, 0.48], [0.02, 0.48, 0.72, 0.48], [0.72, 0.48, 1, 0.72], [1, 0.72, 0.78, 1], [0.78, 1, 0.1, 1]],
+      "6": [[0.9, 0.1, 0.72, 0], [0.72, 0, 0.18, 0.25], [0.18, 0.25, 0, 0.78], [0, 0.78, 0.22, 1], [0.22, 1, 0.78, 1], [0.78, 1, 1, 0.75], [1, 0.75, 0.78, 0.52], [0.78, 0.52, 0.1, 0.52]],
+      "7": [[0, 0, 1, 0], [1, 0, 0.28, 1]],
+      "8": [[0.2, 0, 0.8, 0], [0.8, 0, 1, 0.22], [1, 0.22, 0.75, 0.5], [0.75, 0.5, 1, 0.78], [1, 0.78, 0.8, 1], [0.8, 1, 0.2, 1], [0.2, 1, 0, 0.78], [0, 0.78, 0.25, 0.5], [0.25, 0.5, 0, 0.22], [0, 0.22, 0.2, 0], [0.25, 0.5, 0.75, 0.5]],
+      "9": [[0.1, 0.9, 0.28, 1], [0.28, 1, 0.82, 0.75], [0.82, 0.75, 1, 0.22], [1, 0.22, 0.78, 0], [0.78, 0, 0.22, 0], [0.22, 0, 0, 0.25], [0, 0.25, 0.22, 0.48], [0.22, 0.48, 0.9, 0.48]],
+      "(": [[0.72, 0, 0.35, 0.18], [0.35, 0.18, 0.2, 0.5], [0.2, 0.5, 0.35, 0.82], [0.35, 0.82, 0.72, 1]],
+      ")": [[0.28, 0, 0.65, 0.18], [0.65, 0.18, 0.8, 0.5], [0.8, 0.5, 0.65, 0.82], [0.65, 0.82, 0.28, 1]],
+      ",": [[0.58, 0.82, 0.42, 1]],
+      "*": [[0.5, 0.15, 0.5, 0.85], [0.15, 0.5, 0.85, 0.5], [0.25, 0.25, 0.75, 0.75], [0.75, 0.25, 0.25, 0.75]],
+      ".": [[0.45, 0.92, 0.55, 0.92], [0.55, 0.92, 0.55, 1], [0.55, 1, 0.45, 1], [0.45, 1, 0.45, 0.92]],
+      ":": [[0.45, 0.25, 0.55, 0.25], [0.55, 0.25, 0.55, 0.35], [0.55, 0.35, 0.45, 0.35], [0.45, 0.35, 0.45, 0.25], [0.45, 0.72, 0.55, 0.72], [0.55, 0.72, 0.55, 0.82], [0.55, 0.82, 0.45, 0.82], [0.45, 0.82, 0.45, 0.72]],
+      "?": [[0.05, 0.2, 0.25, 0], [0.25, 0, 0.75, 0], [0.75, 0, 0.95, 0.2], [0.95, 0.2, 0.5, 0.55], [0.5, 0.55, 0.5, 0.72], [0.48, 0.95, 0.52, 0.95]]
+    };
+
+    function strokeTextLines(text, x, y, height, direction = "horizontal") {
+      const charWidth = height * 0.55;
+      const gap = height * 0.16;
+      const space = height * 0.38;
+      let cursor = 0;
+      const lines = [];
+      const transform = direction === "vertical"
+        ? (px, py) => ({ x: x + py, y: y + px })
+        : (px, py) => ({ x: x + px, y: y + py });
+
+      for (const rawChar of text.toUpperCase()) {
+        if (rawChar === " ") {
+          cursor += space;
+          continue;
+        }
+
+        const glyph = STROKE_FONT[rawChar] || STROKE_FONT["?"];
+        for (const segment of glyph) {
+          const start = transform(cursor + segment[0] * charWidth, segment[1] * height);
+          const end = transform(cursor + segment[2] * charWidth, segment[3] * height);
+          lines.push({ x1: start.x, y1: start.y, x2: end.x, y2: end.y });
+        }
+        cursor += charWidth + gap;
+      }
+
+      return lines;
+    }
+
+    const PANEL_DESIGN_ORDER = {
+      single: 0,
+      corner: 1,
+      leftRightEdge: 2,
+      topBottomEdge: 3,
+      inside: 4
+    };
+
+    function panelDesignKind(result, row, col) {
+      const xEdge = col === 0 || col === result.panelCols - 1;
+      const yEdge = row === 0 || row === result.panelRows - 1;
+      if (result.panelCols === 1 && result.panelRows === 1) return "single";
+      if (xEdge && yEdge) return "corner";
+      if (xEdge) return "leftRightEdge";
+      if (yEdge) return "topBottomEdge";
+      return "inside";
+    }
+
+    function gridColumnLabel(index) {
+      let value = index + 1;
+      let label = "";
+      while (value > 0) {
+        const remainder = (value - 1) % 26;
+        label = String.fromCharCode(65 + remainder) + label;
+        value = Math.floor((value - 1) / 26);
+      }
+      return label;
+    }
+
+    function panelGridReference(row, col) {
+      return `${gridColumnLabel(col)}${row + 1}`;
+    }
+
+    function roundedPanelDimension(value) {
+      return Math.max(1, Math.floor(value));
+    }
+
+    function panelInstances(result) {
+      const joinAllowance = result.panelJoinGap ?? 25;
+      const xOrigins = [];
+      const yOrigins = [];
+      let cursor = 0;
+
+      for (const width of result.panelWidths) {
+        xOrigins.push(cursor);
+        cursor += width + joinAllowance;
+      }
+
+      cursor = 0;
+      for (const height of result.panelHeights) {
+        yOrigins.push(cursor);
+        cursor += height + joinAllowance;
+      }
+
+      const panels = [];
+      for (let row = 0; row < result.panelRows; row += 1) {
+        for (let col = 0; col < result.panelCols; col += 1) {
+          const designKind = panelDesignKind(result, row, col);
+          panels.push({
+            row,
+            col,
+            designKind,
+            gridRef: panelGridReference(row, col),
+            x: xOrigins[col],
+            y: yOrigins[row],
+            width: result.panelWidths[col],
+            height: result.panelHeights[row]
+          });
+        }
+      }
+      return panels;
+    }
+
+    function uniqueCutPanels(result) {
+      const seen = new Map();
+      for (const panel of panelInstances(result)) {
+        const guideKey = cutPanelGuideKey(result, panel);
+        const key = `${panel.width.toFixed(2)}|${panel.height.toFixed(2)}|${guideKey}`;
+        if (!seen.has(key)) seen.set(key, { ...panel, quantity: 0, gridRefs: [] });
+        const current = seen.get(key);
+        current.quantity += 1;
+        current.gridRefs.push(panel.gridRef);
+      }
+      return [...seen.values()].sort((a, b) =>
+        (PANEL_DESIGN_ORDER[a.designKind] ?? 99) - (PANEL_DESIGN_ORDER[b.designKind] ?? 99)
+      );
+    }
+
+    function cutPanelGuideKey(result, panel) {
+      const geometry = ledCutGeometryForPanel(result, panel);
+      const key = cutGeometryKey(geometry);
+      const rotatedKey = cutGeometryKey({
+        bars: geometry.bars.map((line) => rotateLine180(line, panel.width, panel.height)),
+        ticks: geometry.ticks.map((line) => rotateLine180(line, panel.width, panel.height))
+      });
+      return key < rotatedKey ? key : rotatedKey;
+    }
+
+    function rotateLine180(line, width, height) {
+      return {
+        x1: width - line.x1,
+        y1: height - line.y1,
+        x2: width - line.x2,
+        y2: height - line.y2
+      };
+    }
+
+    function normalizedLineKey(line) {
+      const a = [line.x1, line.y1];
+      const b = [line.x2, line.y2];
+      const reverse = b[0] < a[0] || (Math.abs(b[0] - a[0]) < 0.005 && b[1] < a[1]);
+      const start = reverse ? b : a;
+      const end = reverse ? a : b;
+      return `${start[0].toFixed(2)},${start[1].toFixed(2)},${end[0].toFixed(2)},${end[1].toFixed(2)}`;
+    }
+
+    function cutGeometryKey(geometry) {
+      const bars = geometry.bars.map(normalizedLineKey).sort();
+      const ticks = geometry.ticks.map(normalizedLineKey).sort();
+      return `${bars.join(";")}|${ticks.join(";")}`;
+    }
+
+    function cutPanelLabel(result, panel) {
+      const gridRefs = (panel.gridRefs && panel.gridRefs.length ? panel.gridRefs : [panel.gridRef])
+        .filter(Boolean)
+        .join(", ");
+      const panelSize = `Panel ${roundedPanelDimension(panel.width)} x ${roundedPanelDimension(panel.height)}`;
+      return `${Math.ceil(result.cfg.width)} x ${Math.ceil(result.cfg.height)}, QP${panel.quantity || 1}${gridRefs ? `, ${gridRefs}` : ""}, ${panelSize}`;
+    }
+
+    function ledCutTextLines(result, panel, geometry) {
+      const textHeight = 12;
+      const label = cutPanelLabel(result, panel);
+      const bars = geometry.bars;
+      if (!bars.length) return [];
+
+      if (result.ledOrientation === "Horizontal") {
+        const first = bars[0];
+        const second = bars[1];
+        const ledTickXs = geometry.ticks.map((line) => line.x1).filter((value) => Number.isFinite(value));
+        const firstLedX = ledTickXs.length ? Math.min(...ledTickXs) : result.ledOffset - panel.x;
+        const centerY = second
+          ? (first.y1 + second.y1) / 2
+          : clamp(first.y1 + result.ledBarPitch / 2, textHeight / 2, panel.height - textHeight / 2);
+        const textX = clamp(firstLedX, 0, Math.max(0, panel.width - textHeight));
+        const textY = clamp(centerY - textHeight / 2, 0, Math.max(0, panel.height - textHeight));
+        return strokeTextLines(label, textX, textY, textHeight, "horizontal");
+      }
+
+      const first = bars[0];
+      const second = bars[1];
+      const ledTickYs = geometry.ticks.map((line) => line.y1).filter((value) => Number.isFinite(value));
+      const firstLedY = ledTickYs.length ? Math.min(...ledTickYs) : result.ledOffset - panel.y;
+      const centerX = second
+        ? (first.x1 + second.x1) / 2
+        : clamp(first.x1 + result.ledBarPitch / 2, textHeight / 2, panel.width - textHeight / 2);
+      const textX = clamp(centerX - textHeight / 2, 0, Math.max(0, panel.width - textHeight));
+      const textY = clamp(firstLedY, 0, Math.max(0, panel.height - textHeight));
+      return strokeTextLines(label, textX, textY, textHeight, "vertical");
+    }
+
+    function centeredGuidePositions(count, pitch, length) {
+      if (count <= 0) return [];
+      const start = (length - (count - 1) * pitch) / 2;
+      return Array.from({ length: count }, (_, index) => start + index * pitch);
+    }
+
+    function buttJoinGuidePositions(panel, result, axis) {
+      const pitch = result.ledBarPitch;
+      const length = axis === "x" ? panel.width : panel.height;
+      const hasNearJoin = axis === "x" ? panel.col > 0 : panel.row > 0;
+      const hasFarJoin = axis === "x" ? panel.col < result.panelCols - 1 : panel.row < result.panelRows - 1;
+      const nearOffset = hasNearJoin ? pitch / 2 : 20;
+      const farOffset = hasFarJoin ? pitch / 2 : 20;
+      const positions = [];
+      for (let position = nearOffset; position <= length - farOffset + 0.5; position += pitch) {
+        positions.push(position);
+      }
+      return positions;
+    }
+
+    function ledCutGeometryForPanel(result, panel) {
+      const epsilon = 0.001;
+      const firstGuideOffset = 20;
+      const bars = [];
+      const ticks = [];
+      const panelRight = panel.x + panel.width;
+      const panelBottom = panel.y + panel.height;
+      let ledXs = Array.from({ length: result.ledAcross }, (_, index) => (
+        result.ledOrientation === "Horizontal"
+          ? result.ledOffset + index * DATA.constants.ledSpacing
+          : firstGuideOffset + index * result.ledBarPitch
+      ));
+      let ledYs = Array.from({ length: result.ledDown }, (_, index) => (
+        result.ledOrientation === "Horizontal"
+          ? firstGuideOffset + index * result.ledBarPitch
+          : result.ledOffset + index * DATA.constants.ledSpacing
+      ));
+
+      if (result.panelJoinGap === 0 && result.ledOrientation === "Horizontal") {
+        ledYs = buttJoinGuidePositions(panel, result, "y").map((localY) => localY + panel.y);
+      } else if (result.panelJoinGap === 0 && result.ledOrientation === "Vertical") {
+        ledXs = buttJoinGuidePositions(panel, result, "x").map((localX) => localX + panel.x);
+      } else if (result.ledOrientation === "Horizontal" && panel.row > 0 && panel.row < result.panelRows - 1) {
+        const rowCount = ledYs.filter((globalY) => globalY >= panel.y - epsilon && globalY <= panelBottom + epsilon).length;
+        ledYs = centeredGuidePositions(rowCount, result.ledBarPitch, panel.height).map((localY) => localY + panel.y);
+      } else if (result.ledOrientation === "Vertical" && panel.col > 0 && panel.col < result.panelCols - 1) {
+        const colCount = ledXs.filter((globalX) => globalX >= panel.x - epsilon && globalX <= panelRight + epsilon).length;
+        ledXs = centeredGuidePositions(colCount, result.ledBarPitch, panel.width).map((localX) => localX + panel.x);
+      }
+
+      if (result.ledOrientation === "Horizontal") {
+        const barStart = ledXs[0];
+        const barEnd = ledXs[ledXs.length - 1];
+
+        for (const globalY of ledYs) {
+          if (globalY < panel.y - epsilon || globalY > panelBottom + epsilon) continue;
+          const localY = globalY - panel.y;
+          const lineStart = Math.max(barStart, panel.x);
+          const lineEnd = Math.min(barEnd, panelRight);
+          if (lineEnd >= lineStart) {
+            bars.push({ x1: lineStart - panel.x, y1: localY, x2: lineEnd - panel.x, y2: localY });
+          }
+
+          for (const globalX of ledXs) {
+            if (globalX < panel.x - epsilon || globalX > panelRight + epsilon) continue;
+            const localX = globalX - panel.x;
+            ticks.push({
+              x1: localX,
+              y1: clamp(localY - 5, 0, panel.height),
+              x2: localX,
+              y2: clamp(localY + 5, 0, panel.height)
+            });
+          }
+        }
+      } else {
+        const barStart = ledYs[0];
+        const barEnd = ledYs[ledYs.length - 1];
+
+        for (const globalX of ledXs) {
+          if (globalX < panel.x - epsilon || globalX > panelRight + epsilon) continue;
+          const localX = globalX - panel.x;
+          const lineStart = Math.max(barStart, panel.y);
+          const lineEnd = Math.min(barEnd, panelBottom);
+          if (lineEnd >= lineStart) {
+            bars.push({ x1: localX, y1: lineStart - panel.y, x2: localX, y2: lineEnd - panel.y });
+          }
+
+          for (const globalY of ledYs) {
+            if (globalY < panel.y - epsilon || globalY > panelBottom + epsilon) continue;
+            const localY = globalY - panel.y;
+            ticks.push({
+              x1: clamp(localX - 5, 0, panel.width),
+              y1: localY,
+              x2: clamp(localX + 5, 0, panel.width),
+              y2: localY
+            });
+          }
+        }
+      }
+
+      return { bars, ticks };
+    }
+
+    function mmToPt(value) {
+      return value * 72 / 25.4;
+    }
+
+    function pdfNumber(value) {
+      const normal = Math.abs(value) < 0.0005 ? 0 : value;
+      return Number(normal.toFixed(4)).toString();
+    }
+
+    function pdfLine(pageHeightPt, line) {
+      const x1 = mmToPt(line.x1);
+      const y1 = pageHeightPt - mmToPt(line.y1);
+      const x2 = mmToPt(line.x2);
+      const y2 = pageHeightPt - mmToPt(line.y2);
+      return `${pdfNumber(x1)} ${pdfNumber(y1)} m ${pdfNumber(x2)} ${pdfNumber(y2)} l S\n`;
+    }
+
+    function asciiBytes(text) {
+      const bytes = new Uint8Array(text.length);
+      for (let index = 0; index < text.length; index += 1) {
+        bytes[index] = text.charCodeAt(index) & 0xff;
+      }
+      return bytes;
+    }
+
+    function createCutFilePdfBytes(result = calculate()) {
+      const panels = uniqueCutPanels(result);
+      const objects = [];
+      const reserve = () => {
+        objects.push("");
+        return objects.length;
+      };
+      const setObject = (id, body) => {
+        objects[id - 1] = body;
+      };
+      const streamObject = (content) => `<< /Length ${content.length} >>\nstream\n${content}endstream`;
+
+      const catalogId = reserve();
+      const pagesId = reserve();
+      const cutLayerId = reserve();
+      const ledLayerId = reserve();
+      const cutTintId = reserve();
+      const ledTintId = reserve();
+      const cutColorId = reserve();
+      const ledColorId = reserve();
+      const pageIds = [];
+
+      setObject(cutLayerId, "<< /Type /OCG /Name (CutContour) >>");
+      setObject(ledLayerId, "<< /Type /OCG /Name (LEDs) >>");
+      setObject(cutTintId, "<< /FunctionType 2 /Domain [0 1] /C0 [0 0 0 0] /C1 [0 1 0 0] /N 1 >>");
+      setObject(ledTintId, "<< /FunctionType 2 /Domain [0 1] /C0 [0 0 0 0] /C1 [1 1 0 0] /N 1 >>");
+      setObject(cutColorId, `[/Separation /CutContour /DeviceCMYK ${cutTintId} 0 R]`);
+      setObject(ledColorId, `[/Separation /LEDs /DeviceCMYK ${ledTintId} 0 R]`);
+
+      for (const panel of panels) {
+        const pageWidthPt = mmToPt(roundedPanelDimension(panel.width));
+        const pageHeightPt = mmToPt(roundedPanelDimension(panel.height));
+        const geometry = ledCutGeometryForPanel(result, panel);
+        const textLines = ledCutTextLines(result, panel, geometry);
+        const ledLines = [...geometry.bars, ...geometry.ticks, ...textLines].map((line) => pdfLine(pageHeightPt, line)).join("");
+        const content = [
+          "q\n",
+          "/OC /CutLayer BDC\n",
+          "/CutContourCS CS\n",
+          "1 SCN\n",
+          "0.1 w\n",
+          `0 0 ${pdfNumber(pageWidthPt)} ${pdfNumber(pageHeightPt)} re S\n`,
+          "EMC\n",
+          "Q\n",
+          "q\n",
+          "/OC /LEDLayer BDC\n",
+          "/LEDsCS CS\n",
+          "1 SCN\n",
+          "0.1 w\n",
+          ledLines,
+          "EMC\n",
+          "Q\n"
+        ].join("");
+        const contentId = reserve();
+        const pageId = reserve();
+        setObject(contentId, streamObject(content));
+        setObject(pageId, [
+          "<< /Type /Page",
+          `/Parent ${pagesId} 0 R`,
+          `/MediaBox [0 0 ${pdfNumber(pageWidthPt)} ${pdfNumber(pageHeightPt)}]`,
+          `/Resources << /ColorSpace << /CutContourCS ${cutColorId} 0 R /LEDsCS ${ledColorId} 0 R >> /Properties << /CutLayer ${cutLayerId} 0 R /LEDLayer ${ledLayerId} 0 R >> >>`,
+          `/Contents ${contentId} 0 R`,
+          ">>"
+        ].join(" "));
+        pageIds.push(pageId);
+      }
+
+      setObject(pagesId, `<< /Type /Pages /Count ${pageIds.length} /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] >>`);
+      setObject(catalogId, [
+        "<< /Type /Catalog",
+        `/Pages ${pagesId} 0 R`,
+        `/OCProperties << /OCGs [${cutLayerId} 0 R ${ledLayerId} 0 R] /D << /Order [${cutLayerId} 0 R ${ledLayerId} 0 R] /ON [${cutLayerId} 0 R ${ledLayerId} 0 R] >> >>`,
+        ">>"
+      ].join(" "));
+
+      let pdf = "%PDF-1.7\n";
+      const offsets = [0];
+      objects.forEach((body, index) => {
+        offsets[index + 1] = pdf.length;
+        pdf += `${index + 1} 0 obj\n${body}\nendobj\n`;
+      });
+      const xrefOffset = pdf.length;
+      pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+      for (let index = 1; index <= objects.length; index += 1) {
+        pdf += `${String(offsets[index]).padStart(10, "0")} 00000 n \n`;
+      }
+      pdf += `trailer\n<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+      return asciiBytes(pdf);
+    }
+
+    function fitsSheet(width, height, sheetWidth, sheetHeight) {
+      return (width <= sheetWidth && height <= sheetHeight) || (width <= sheetHeight && height <= sheetWidth);
+    }
+
+    function panelCartLinks(result) {
+      return uniqueCutPanels(result).map((panel) => {
+        const width = roundedPanelDimension(panel.width);
+        const height = roundedPanelDimension(panel.height);
+        const quantity = Math.max(1, Math.ceil((panel.quantity || 1) * result.cfg.quantity));
+        const isStandard = fitsSheet(width, height, 1220, 2440);
+        const isOversize = !isStandard && fitsSheet(width, height, 1500, 3000);
+        if (!isStandard && !isOversize) return null;
+        const qcode = isStandard ? DATA.constants.standardPanelQcode : DATA.constants.oversizePanelQcode;
+        const sizeName = isStandard ? "Standard Size" : "Oversize";
+        const gridRefs = (panel.gridRefs && panel.gridRefs.length ? panel.gridRefs : [panel.gridRef])
+          .filter(Boolean)
+          .join(", ");
+        const shortname = gridRefs ? `${sizeName} ${gridRefs}` : sizeName;
+        return {
+          label: `Add ${sizeName} Panel To Cart`,
+          code: qcode,
+          tone: isStandard ? "secondary" : "rose",
+          url: cartUrl({
+            qcode,
+            quantity,
+            width,
+            height,
+            shortname
+          })
+        };
+      }).filter(Boolean);
+    }
+
+    function safeFilePart(value) {
+      return (value || "backlit-lightbox")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || "backlit-lightbox";
+    }
+
+    function clickDownloadLink(href, filename) {
+      const link = document.createElement("a");
+      link.href = href;
+      link.download = filename;
+      link.style.display = "none";
+      if (document.body) document.body.appendChild(link);
+      link.click();
+      if (link.parentNode) link.parentNode.removeChild(link);
+    }
+
+    let activeCutFileUrl = "";
+
+    async function downloadCutFile() {
+      const result = calculate();
+      const bytes = createCutFilePdfBytes(result);
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      if (activeCutFileUrl) URL.revokeObjectURL(activeCutFileUrl);
+      activeCutFileUrl = URL.createObjectURL(blob);
+
+      const filename = `${safeFilePart(result.cfg.shortName)}-cut-file.pdf`;
+      const link = document.getElementById("cutFileLink");
+      link.href = activeCutFileUrl;
+      link.download = filename;
+      link.textContent = `Download ${filename}`;
+
+      const openLink = document.getElementById("cutFileOpenLink");
+      openLink.href = activeCutFileUrl;
+
+      const notice = document.getElementById("cutFileNotice");
+      notice.classList.add("show");
+
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: filename,
+            types: [{ description: "PDF", accept: { "application/pdf": [".pdf"] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(blob);
+          await writable.close();
+          return;
+        } catch (error) {
+          if (error && error.name === "AbortError") return;
+        }
+      }
+      clickDownloadLink(activeCutFileUrl, filename);
+    }
+
+    async function requestCutFilePasswordAndDownload() {
+      const password = window.prompt("Enter password to download cut files:");
+      if (password === null) return;
+      if (password !== CUT_FILE_PASSWORD) {
+        window.alert("Incorrect password.");
+        return;
+      }
+      await downloadCutFile();
+    }
+
+    function render() {
+      syncFinishControls();
+      syncPackingLengthDefault();
+      const result = calculate();
+      const { cfg } = result;
+      updatePowerSupplyOptions(result.powerWatts);
+      storeSharedSize(false);
+      const showOtherColour = cfg.powderCoating && cfg.colourChoice === "Other";
+      document.getElementById("otherColourField").hidden = !showOtherColour;
+      fields.otherColour.disabled = !showOtherColour;
+      document.getElementById("boxPrice").textContent = fmtMoney(increasedPrice(result.boxPrice));
+      document.getElementById("unitCost").textContent = fmtMoney(increasedPrice(result.skinPrice));
+      document.getElementById("totalCost").textContent = fmtMoney(increasedPrice(result.unitCost));
+      document.getElementById("skinPrice").textContent = fmtMoney(increasedPrice(result.skinPrice));
+      document.getElementById("skinRate").textContent = `${fmtMoney(increasedPrice(cfg.skinRate))} / sqm`;
+      document.getElementById("cartonDimensions").textContent = `${result.packingLengthCm} x ${result.packingWidthCm} x ${result.packingHeightCm} cm`;
+      document.getElementById("cartonPrice").textContent = fmtMoney(Math.ceil(increasedPrice(result.cartonPrice)));
+      document.getElementById("powerWatts").textContent = `${fmtNumber(result.powerWatts, 1)} W`;
+      document.getElementById("ledSummary").textContent = `${result.ledAcross} across x ${result.ledDown} down, ${result.ledQty} LEDs total. Pitch ${fmtNumber(result.ledBarPitch, 2)} mm, offset ${fmtNumber(result.ledOffset, 2)} mm.`;
+      document.getElementById("totalCostNote").textContent = "Ex GST.";
+      document.getElementById("compositeSize").textContent = `${fmtNumber(result.compositeWidth, 0)} x ${fmtNumber(result.compositeHeight, 0)} mm`;
+      document.getElementById("panelSize").textContent = result.panelDisplaySize;
+      document.getElementById("packingSize").textContent = `${result.packingLengthCm} x ${result.packingWidthCm} x ${result.packingHeightCm} cm, ${urlInt(result.weightKg)} kg`;
+      document.getElementById("ledLayoutDetail").textContent = `${result.ledAcross} x ${result.ledDown}, ${fmtNumber(result.ledBarPitch, 2)} / ${fmtNumber(result.ledOffset, 2)} mm`;
+      document.getElementById("powerLeadQty").textContent = `${result.powerLeadQty}`;
+      document.getElementById("powerDensity").textContent = `${fmtNumber(result.powerDensity, 1)} W/m2`;
+      document.getElementById("averageLuminance").textContent = `Average Luminance: ${Math.round(result.averageLuminance)} Nits cd/m2`;
+      document.getElementById("powerLeadDetail").textContent = `${result.powerLeadQty} - ${cfg.exitLeadFrom}, ${cfg.leadLocation}`;
+      document.getElementById("caseName").textContent = result.horizontalBraces && result.verticalBraces ? "Both braces" : result.horizontalBraces ? "Horizontal braces" : result.verticalBraces ? "Vertical braces" : "No braces";
+      document.getElementById("panelCount").textContent = `${result.panelCount} panel${result.panelCount === 1 ? "" : "s"}`;
+      document.getElementById("weightPill").textContent = `${fmtNumber(result.weightKg, 1)} kg`;
+
+      const preview = document.getElementById("lightboxPreview");
+      const geometry = previewGeometry(cfg, preview);
+      preview.style.setProperty("--box-ratio", `${geometry.ratio}`);
+      preview.style.setProperty("--preview-width-px", `${geometry.width}px`);
+      preview.style.setProperty("--preview-height-px", `${geometry.height}px`);
+      preview.style.setProperty("--frame-px", `${geometry.framePx}px`);
+      preview.style.setProperty("--frame-color", previewFrameColor(cfg));
+      preview.style.setProperty("--brace-display", "none");
+      preview.style.setProperty("--vertical-brace-display", "none");
+      drawLightMatrix(result);
+
+      const tbody = document.getElementById("cuttingList");
+      tbody.innerHTML = result.cuttingLines.map((line) => `
+        <tr>
+          <td>${line.item}</td>
+          <td class="num">${fmtNumber(line.qty, Number.isInteger(line.qty) ? 0 : 2)}</td>
+          <td class="num">${line.size}</td>
+          <td class="num">${fmtMoney(increasedPrice(line.cost), 2)}</td>
+        </tr>
+      `).join("") + `
+        <tr>
+          <td><strong>Total Cost</strong></td>
+          <td class="num"></td>
+          <td class="num"></td>
+          <td class="num"><strong>${fmtMoney(increasedPrice(result.rawBuildCost), 2)}</strong></td>
+        </tr>
+      `;
+
+      const warnings = [];
+      if (result.powerWatts > result.supplyQty * cfg.powerSupply.unitWatts) {
+        warnings.push("Selected power supply is undersized.");
+      }
+      if (cfg.packingMethod === "assembled" && cfg.width > 3000 && cfg.height > 3000) {
+        warnings.push("Box to large to send assembled, are you sure");
+      }
+      if (
+        cfg.extrusion.name === "Vivalux 50mm Aluminium Lightbox" &&
+        (result.joinsWidth > 0 || result.joinsHeight > 0)
+      ) {
+        warnings.push("Panels will have butt joins. We recommend Vivalux 80mm Extrusion for boxes larger that 3 metres x 1.5 metres.");
+      }
+      if (result.joinsWidth > 0 || result.joinsHeight > 0) {
+        warnings.push(`Panel split required: ${result.joinsWidth} width join(s), ${result.joinsHeight} height join(s).`);
+      }
+      if (result.panelJoinAdjusted) {
+        warnings.push("Panel join offset between LED bars.");
+      }
+      if (result.panel.orientation === "Custom") {
+        warnings.push("No stock panel matched the panel size cleanly.");
+      }
+      if (result.printArea > 10) {
+        warnings.push("Large print area. Confirm handling, install path and packing length before sending to cart.");
+      }
+      document.getElementById("warnings").innerHTML = warnings.length
+        ? `<table><tbody>${warnings.map((warning) => `<tr><td>${warning}</td></tr>`).join("")}</tbody></table>`
+        : `<p class="hint">No warnings for the current configuration.</p>`;
+      document.getElementById("descriptionPreview").textContent = result.description;
+
+      const boxUrl = cartUrl({
+        qcode: DATA.constants.boxQcode,
+        quantity: cfg.quantity,
+        shortname: cfg.shortName,
+        description: result.description,
+        packinglengthcm: result.packingLengthCm,
+        packingwidthcm: result.packingWidthCm,
+        packingheightcm: result.packingHeightCm,
+        weightkg: urlInt(result.weightKg),
+        price: urlInt(increasedPrice(result.boxPrice))
+      });
+      const skinUrl = cartUrl({
+        qcode: cfg.skin.qcode,
+        quantity: cfg.quantity,
+        width: urlInt(cfg.width),
+        height: urlInt(cfg.height),
+        shortname: ` ${cfg.shortName}`,
+        price: urlInt(increasedPrice(result.skinPrice))
+      });
+      const cartonUrl = cartUrl({
+        qcode: DATA.constants.cartonQcode,
+        quantity: Math.max(1, Math.ceil(cfg.quantity)),
+        shortname: `${cfg.shortName} carton`,
+        description: `CA Flute, Heavy Duty cardboard 8.6mm box of internal dimensions ${result.packingWidthCm} cm (w) x ${result.packingLengthCm} cm (h) x ${result.packingHeightCm} cm (d).`,
+        packingwidthcm: result.packingWidthCm,
+        packinglengthcm: result.packingLengthCm,
+        packingheightcm: result.packingHeightCm,
+        weightkg: urlInt(Math.max(1, result.weightKg * 0.1)),
+        price: urlInt(increasedPrice(result.cartonPrice))
+      });
+      const panelLinks = panelCartLinks(result);
+      const links = [
+        { label: "Add Box To Cart", code: DATA.constants.boxQcode, url: boxUrl, tone: "" },
+        {
+          label: "Add Skin To Cart",
+          code: cfg.skin.qcode,
+          tone: "secondary",
+          url: skinUrl
+        },
+      ];
+      const bundleUrls = [boxUrl, skinUrl, ...panelLinks.map((link) => link.url), cartonUrl];
+
+      const cartLinks = document.getElementById("cartLinks");
+      cartLinks.innerHTML = `
+        ${links.map((link, index) => `
+        <a class="cart-button ${escapeHtml(link.tone)}" href="${escapeHtml(link.url)}" data-url="${escapeHtml(link.url)}" data-index="${index}">
+          <span>${escapeHtml(link.label)}</span>
+          <small>${escapeHtml(link.code)}</small>
+        </a>
+      `).join("")}
+        <button class="cart-button combo" type="button" data-bundle="${escapeHtml(JSON.stringify(bundleUrls))}">
+          <span>Add All, Box, Skin, Panels and Packing</span>
+        </button>
+      `;
+      document.getElementById("selectedUrl").value = links[0].url;
+    }
+
+    function openCartUrlsSequentially(urls) {
+      const queue = urls.filter(Boolean);
+      if (!queue.length) return;
+      const cartTab = window.open(queue[0], "_blank");
+      if (!cartTab) return;
+      queue.slice(1).forEach((url, index) => {
+        window.setTimeout(() => {
+          if (!cartTab.closed) {
+            cartTab.location.href = url;
+            cartTab.focus();
+          }
+        }, (index + 1) * 2500);
+      });
+    }
+
+    function bindEvents() {
+      function handleFormEdit(event) {
+        if (event.target === fields.packingLength) {
+          packingLengthUserSelected = true;
+        }
+        if (event.target.matches("select")) {
+          saveFormState();
+        }
+        if (event.target === fields.width || event.target === fields.height) {
+          storeSharedSize();
+        }
+        render();
+      }
+      form.addEventListener("input", handleFormEdit);
+      form.addEventListener("change", handleFormEdit);
+      document.getElementById("cartLinks").addEventListener("click", (event) => {
+        const bundleButton = event.target.closest("button[data-bundle]");
+        if (bundleButton) {
+          event.preventDefault();
+          const urls = JSON.parse(bundleButton.dataset.bundle || "[]");
+          document.getElementById("selectedUrl").value = urls.join(" -> ");
+          openCartUrlsSequentially(urls);
+          return;
+        }
+        const link = event.target.closest("a[data-url]");
+        if (link) {
+          document.getElementById("selectedUrl").value = link.dataset.url;
+        }
+      });
+      document.getElementById("copyUrl").addEventListener("click", async () => {
+        const input = document.getElementById("selectedUrl");
+        input.select();
+        try {
+          await navigator.clipboard.writeText(input.value);
+        } catch {
+          document.execCommand("copy");
+        }
+        const notice = document.getElementById("copyNotice");
+        notice.classList.add("show");
+        window.setTimeout(() => notice.classList.remove("show"), 1800);
+      });
+      document.getElementById("downloadCutFile").addEventListener("click", requestCutFilePasswordAndDownload);
+      if (window.addEventListener) {
+        document.querySelectorAll(".app-tabs a").forEach((link) => {
+          link.addEventListener("click", saveFormState);
+        });
+        window.addEventListener("resize", render);
+        window.addEventListener("storage", (event) => {
+          if (event.key !== SHARED_SIZE_KEY) return;
+          loadSharedSize();
+          render();
+        });
+      }
+    }
+
+    setupOptions();
+    restoreFormState();
+    updatePowerSupplyOptions();
+    bindEvents();
+    render();
+  </script>
+</body>
+</html>
