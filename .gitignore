@@ -1,0 +1,6 @@
+.agents/
+.codex/
+codex_local_server.py
+*.log
+.DS_Store
+Thumbs.db
