@@ -48,70 +48,68 @@ const PT_PER_MM = 2.834645669;
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PRICE_MULTIPLIER = 1.4285714;
 const INFILL_PDF_MARGIN_MM = 0;
-const INFILL_CORNER_DETAIL_OFFSET_MM = 4;
 
 const INFILL_TEMPLATE = {
-  minX: -140,
-  minY: 435,
+  width: 600,
   baseCutHeight: 1484,
-  shiftY: 1177,
+  shiftY: 742,
   lines: [
-    [460, 1177, 460, 1888.5],
-    [460, 1177, 460, 465.5],
-    [-140, 465.5, -140, 1177],
-    [-140, 1888.5, -140, 1177],
-    [-78, 435, 398, 435],
-    [-78, 1919, 398, 1919],
-    [443.5, 1880, 407, 1880],
-    [-123.5, 474, -87, 474],
-    [-123.5, 1880, -87, 1880],
-    [443.5, 474, 407, 474],
-    [403, 1914, 403, 1884],
-    [-83, 440, -83, 470],
-    [-83, 1914, -83, 1884],
-    [403, 440, 403, 470],
-    [442, 1890, 458.5, 1890],
-    [-122, 464, -138.5, 464],
-    [-122, 1890, -138.5, 1890],
-    [442, 464, 458.5, 464],
-    [442, 470, 443.5, 470],
-    [-122, 1884, -123.5, 1884],
-    [442, 1884, 443.5, 1884],
-    [-122, 470, -123.5, 470],
-    [-125, 1881.5, -125, 1882.5],
-    [445, 472.5, 445, 471.5],
-    [445, 1881.5, 445, 1882.5],
-    [-125, 472.5, -125, 471.5],
+    [600, 742, 600, 1453.5],
+    [600, 742, 600, 30.5],
+    [0, 30.5, 0, 742],
+    [0, 1453.5, 0, 742],
+    [62, 0, 538, 0],
+    [16.5, 39, 53, 39],
+    [57, 5, 57, 35],
+    [18, 29, 1.5, 29],
+    [18, 35, 16.5, 35],
+    [15, 37.5, 15, 36.5],
+    [583.5, 39, 547, 39],
+    [543, 5, 543, 35],
+    [582, 29, 598.5, 29],
+    [582, 35, 583.5, 35],
+    [585, 37.5, 585, 36.5],
+    [16.5, 1445, 53, 1445],
+    [57, 1479, 57, 1449],
+    [18, 1455, 1.5, 1455],
+    [18, 1449, 16.5, 1449],
+    [15, 1446.5, 15, 1447.5],
+    [583.5, 1445, 547, 1445],
+    [543, 1479, 543, 1449],
+    [582, 1455, 598.5, 1455],
+    [582, 1449, 583.5, 1449],
+    [585, 1446.5, 585, 1447.5],
+    [62, 1484, 538, 1484],
   ],
   arcs: [
-    [-138.5, 465.5, 1.5, 180, 270],
-    [-138.5, 1888.5, 1.5, 90, 180],
-    [-123.5, 471.5, 1.5, 180, 270],
-    [-123.5, 472.5, 1.5, 90, 180],
-    [-123.5, 1881.5, 1.5, 180, 270],
-    [-123.5, 1882.5, 1.5, 90, 180],
-    [-122, 467, 3, 0, 90],
-    [-122, 467, 3, 270, 0],
-    [-122, 1887, 3, 0, 90],
-    [-122, 1887, 3, 270, 0],
-    [-83, 474, 4, 270, 180],
-    [-83, 1880, 4, 180, 90],
-    [-78, 440, 5, 180, 270],
-    [-78, 1914, 5, 90, 180],
-    [398, 440, 5, 270, 0],
-    [398, 1914, 5, 0, 90],
-    [403, 474, 4, 0, 270],
-    [403, 1880, 4, 90, 0],
-    [442, 467, 3, 90, 180],
-    [442, 467, 3, 180, 270],
-    [442, 1887, 3, 90, 180],
-    [442, 1887, 3, 180, 270],
-    [443.5, 471.5, 1.5, 270, 0],
-    [443.5, 472.5, 1.5, 0, 90],
-    [443.5, 1881.5, 1.5, 270, 0],
-    [443.5, 1882.5, 1.5, 0, 90],
-    [458.5, 465.5, 1.5, 270, 0],
-    [458.5, 1888.5, 1.5, 0, 90],
+    [1.5, 30.5, 1.5, 180, 270],
+    [16.5, 36.5, 1.5, 180, 270],
+    [16.5, 37.5, 1.5, 90, 180],
+    [18, 32, 3, 0, 90],
+    [18, 32, 3, 270, 0],
+    [62, 5, 5, 180, 270],
+    [57, 39, 4, 270, 180],
+    [598.5, 30.5, 1.5, 270, 0],
+    [583.5, 36.5, 1.5, 270, 0],
+    [583.5, 37.5, 1.5, 0, 90],
+    [582, 32, 3, 90, 180],
+    [582, 32, 3, 180, 270],
+    [538, 5, 5, 270, 0],
+    [543, 39, 4, 0, 270],
+    [1.5, 1453.5, 1.5, 90, 180],
+    [16.5, 1447.5, 1.5, 90, 180],
+    [16.5, 1446.5, 1.5, 180, 270],
+    [18, 1452, 3, 270, 0],
+    [18, 1452, 3, 0, 90],
+    [62, 1479, 5, 90, 180],
+    [57, 1445, 4, 180, 90],
+    [598.5, 1453.5, 1.5, 0, 90],
+    [583.5, 1447.5, 1.5, 0, 90],
+    [583.5, 1446.5, 1.5, 270, 0],
+    [582, 1452, 3, 180, 270],
+    [582, 1452, 3, 90, 180],
+    [538, 1479, 5, 0, 90],
+    [543, 1445, 4, 90, 0],
   ],
 };
 
@@ -966,26 +964,15 @@ function normalizeAngle(angle) {
 
 function infillAdjustedY(y, cutHeight) {
   const delta = cutHeight - INFILL_TEMPLATE.baseCutHeight;
-  const maxY = INFILL_TEMPLATE.minY + INFILL_TEMPLATE.baseCutHeight;
-  const cornerDetailBottomY = 464;
-  const cornerDetailTopY = 474;
-
-  let movedY = y;
-  if (y >= cornerDetailBottomY && y <= cornerDetailTopY) {
-    movedY += INFILL_CORNER_DETAIL_OFFSET_MM;
-  } else if (y >= maxY - cornerDetailTopY + INFILL_TEMPLATE.minY && y <= maxY - cornerDetailBottomY + INFILL_TEMPLATE.minY) {
-    movedY -= INFILL_CORNER_DETAIL_OFFSET_MM;
-  }
-
-  return movedY > INFILL_TEMPLATE.shiftY ? movedY + delta : movedY;
+  return y > INFILL_TEMPLATE.shiftY ? y + delta : y;
 }
 
 function infillLocalX(x) {
-  return x - INFILL_TEMPLATE.minX;
+  return x;
 }
 
 function infillLocalY(y, cutHeight) {
-  return infillAdjustedY(y, cutHeight) - INFILL_TEMPLATE.minY;
+  return infillAdjustedY(y, cutHeight);
 }
 
 function makeInfillCutFilePdf(width, height, cutHeight) {
@@ -1068,11 +1055,7 @@ function makeInfillCutFilePdf(width, height, cutHeight) {
 function makeInfillCutFileDxf(cutHeight) {
   const fmt = fmtFileNumber;
   const dxfAnglePair = (startDeg, endDeg) => {
-    const sweepDeg = shortestArcSweep(startDeg, endDeg);
-    if (sweepDeg < 0) {
-      return [normalizeAngle(endDeg), normalizeAngle(startDeg)];
-    }
-    return [normalizeAngle(startDeg), normalizeAngle(startDeg + sweepDeg)];
+    return [normalizeAngle(startDeg), normalizeAngle(endDeg)];
   };
   const entityLines = [];
 
