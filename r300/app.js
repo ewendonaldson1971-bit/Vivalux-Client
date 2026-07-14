@@ -130,6 +130,7 @@ const els = {
   innerFabricGroup: document.querySelector("#innerFabricGroup"),
   outerGraphicQty: document.querySelector("#outerGraphicQty"),
   innerGraphicQty: document.querySelector("#innerGraphicQty"),
+  infillDxfLink: document.querySelector("#infillDxfLink"),
   insertSummary: document.querySelector("#insertSummary"),
   descriptionText: document.querySelector("#descriptionText"),
   diagram: document.querySelector("#diagram"),
@@ -142,6 +143,7 @@ const state = {
   outerFabric: FABRICS[0].name,
   innerFabric: FABRICS[0].name,
   cart: null,
+  infillDxfObjectUrl: null,
 };
 
 const SHARED_DIMENSION_STATE_KEY = "vivalux-shared-frame-dimensions";
@@ -799,6 +801,7 @@ function render() {
     return `<button class="cart-button ${button.className || ""}" type="button" ${payload} ${button.disabled ? "disabled" : ""}><span>${button.label}</span><small>${button.code}</small></button>`;
   }).join("");
   els.selectedUrl.value = frameUrls.join("\n");
+  updateInfillDxfLink(calc);
 }
 
 function enforceMinimum(input, minimum, message) {
@@ -898,19 +901,14 @@ function downloadInfillCutFile() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-function downloadInfillDxf() {
-  const calc = currentCalculation();
+function updateInfillDxfLink(calc) {
+  if (!els.infillDxfLink) return;
   const cutHeight = Math.max(1, calc.height - 16);
   const dxf = makeInfillCutFileDxf(cutHeight);
-  const blob = new Blob([dxf], { type: "application/dxf" });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
-  anchor.href = url;
-  anchor.download = `Forex-Infill-Cut-File-600x${cutHeight}mm.dxf`;
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  if (state.infillDxfObjectUrl) URL.revokeObjectURL(state.infillDxfObjectUrl);
+  state.infillDxfObjectUrl = URL.createObjectURL(new Blob([dxf], { type: "application/octet-stream" }));
+  els.infillDxfLink.href = state.infillDxfObjectUrl;
+  els.infillDxfLink.download = `Forex-Infill-Cut-File-600x${cutHeight}mm.dxf`;
 }
 
 function makeTemplatePdf(width, height, guides) {
@@ -1172,11 +1170,6 @@ function bindEvents() {
 
     if (event.target.closest("[data-infill-cut-file]")) {
       downloadInfillCutFile();
-      return;
-    }
-
-    if (event.target.closest("[data-infill-dxf]")) {
-      downloadInfillDxf();
       return;
     }
 
