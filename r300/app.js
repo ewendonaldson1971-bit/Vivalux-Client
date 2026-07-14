@@ -898,6 +898,21 @@ function downloadInfillCutFile() {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function downloadInfillDxf() {
+  const calc = currentCalculation();
+  const cutHeight = Math.max(1, calc.height - 16);
+  const dxf = makeInfillCutFileDxf(cutHeight);
+  const blob = new Blob([dxf], { type: "application/dxf" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `Forex-Infill-Cut-File-600x${cutHeight}mm.dxf`;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function makeTemplatePdf(width, height, guides) {
   const fmt = (value) => Number(value).toFixed(3).replace(/\.?0+$/, "");
   const content = [
@@ -937,33 +952,51 @@ function makeTemplatePdf(width, height, guides) {
   return new TextEncoder().encode(pdf);
 }
 
-function makeInfillCutFilePdf(width, height, cutHeight) {
-  const fmt = (value) => Number(value).toFixed(3).replace(/\.?0+$/, "");
+function fmtFileNumber(value) {
+  return Number(value).toFixed(3).replace(/\.?0+$/, "");
+}
+
+function shortestArcSweep(start, end) {
+  let sweep = ((end - start + 540) % 360) - 180;
+  if (sweep === -180) sweep = 180;
+  return sweep || 360;
+}
+
+function normalizeAngle(angle) {
+  return ((angle % 360) + 360) % 360;
+}
+
+function infillAdjustedY(y, cutHeight) {
   const delta = cutHeight - INFILL_TEMPLATE.baseCutHeight;
   const maxY = INFILL_TEMPLATE.minY + INFILL_TEMPLATE.baseCutHeight;
   const cornerDetailBottomY = 464;
   const cornerDetailTopY = 474;
-  const moveCornerDetailY = (y) => {
-    if (y >= cornerDetailBottomY && y <= cornerDetailTopY) return y + INFILL_CORNER_DETAIL_OFFSET_MM;
-    if (y >= maxY - cornerDetailTopY + INFILL_TEMPLATE.minY && y <= maxY - cornerDetailBottomY + INFILL_TEMPLATE.minY) {
-      return y - INFILL_CORNER_DETAIL_OFFSET_MM;
-    }
-    return y;
-  };
-  const adjustY = (y) => {
-    const movedY = moveCornerDetailY(y);
-    return movedY > INFILL_TEMPLATE.shiftY ? movedY + delta : movedY;
-  };
-  const xPt = (x) => (x - INFILL_TEMPLATE.minX + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
-  const yPt = (y) => (adjustY(y) - INFILL_TEMPLATE.minY + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
-  const shortestSweep = (start, end) => {
-    let sweep = ((end - start + 540) % 360) - 180;
-    if (sweep === -180) sweep = 180;
-    return sweep || 360;
-  };
+
+  let movedY = y;
+  if (y >= cornerDetailBottomY && y <= cornerDetailTopY) {
+    movedY += INFILL_CORNER_DETAIL_OFFSET_MM;
+  } else if (y >= maxY - cornerDetailTopY + INFILL_TEMPLATE.minY && y <= maxY - cornerDetailBottomY + INFILL_TEMPLATE.minY) {
+    movedY -= INFILL_CORNER_DETAIL_OFFSET_MM;
+  }
+
+  return movedY > INFILL_TEMPLATE.shiftY ? movedY + delta : movedY;
+}
+
+function infillLocalX(x) {
+  return x - INFILL_TEMPLATE.minX;
+}
+
+function infillLocalY(y, cutHeight) {
+  return infillAdjustedY(y, cutHeight) - INFILL_TEMPLATE.minY;
+}
+
+function makeInfillCutFilePdf(width, height, cutHeight) {
+  const fmt = fmtFileNumber;
+  const xPt = (x) => (infillLocalX(x) + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
+  const yPt = (y) => (infillLocalY(y, cutHeight) + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
   const arcCommands = ([cx, cy, r, startDeg, endDeg]) => {
     const commands = [];
-    const sweepDeg = shortestSweep(startDeg, endDeg);
+    const sweepDeg = shortestArcSweep(startDeg, endDeg);
     const segments = Math.max(1, Math.ceil(Math.abs(sweepDeg) / 90));
     const segmentSweep = (sweepDeg * Math.PI / 180) / segments;
     const centerX = xPt(cx);
@@ -1034,6 +1067,73 @@ function makeInfillCutFilePdf(width, height, cutHeight) {
   return new TextEncoder().encode(pdf);
 }
 
+function makeInfillCutFileDxf(cutHeight) {
+  const fmt = fmtFileNumber;
+  const dxfAnglePair = (startDeg, endDeg) => {
+    const sweepDeg = shortestArcSweep(startDeg, endDeg);
+    if (sweepDeg < 0) {
+      return [normalizeAngle(endDeg), normalizeAngle(startDeg)];
+    }
+    return [normalizeAngle(startDeg), normalizeAngle(startDeg + sweepDeg)];
+  };
+  const entityLines = [];
+
+  INFILL_TEMPLATE.lines.forEach(([x1, y1, x2, y2]) => {
+    entityLines.push(
+      "0", "LINE",
+      "8", "CutContour",
+      "10", fmt(infillLocalX(x1)),
+      "20", fmt(infillLocalY(y1, cutHeight)),
+      "30", "0",
+      "11", fmt(infillLocalX(x2)),
+      "21", fmt(infillLocalY(y2, cutHeight)),
+      "31", "0",
+    );
+  });
+
+  INFILL_TEMPLATE.arcs.forEach(([cx, cy, r, startDeg, endDeg]) => {
+    const [startAngle, endAngle] = dxfAnglePair(startDeg, endDeg);
+    entityLines.push(
+      "0", "ARC",
+      "8", "CutContour",
+      "10", fmt(infillLocalX(cx)),
+      "20", fmt(infillLocalY(cy, cutHeight)),
+      "30", "0",
+      "40", fmt(r),
+      "50", fmt(startAngle),
+      "51", fmt(endAngle),
+    );
+  });
+
+  return [
+    "0", "SECTION",
+    "2", "HEADER",
+    "9", "$INSUNITS",
+    "70", "4",
+    "9", "$MEASUREMENT",
+    "70", "1",
+    "0", "ENDSEC",
+    "0", "SECTION",
+    "2", "TABLES",
+    "0", "TABLE",
+    "2", "LAYER",
+    "70", "1",
+    "0", "LAYER",
+    "2", "CutContour",
+    "70", "0",
+    "62", "1",
+    "6", "CONTINUOUS",
+    "0", "ENDTAB",
+    "0", "ENDSEC",
+    "0", "SECTION",
+    "2", "ENTITIES",
+    ...entityLines,
+    "0", "ENDSEC",
+    "0", "EOF",
+    "",
+  ].join("\r\n");
+}
+
 function bindEvents() {
   ["width", "length", "height", "quantity", "shortname", "shape", "includeRigging", "outerGraphicQty", "innerGraphicQty"].forEach((key) => {
     els[key].addEventListener("input", key === "height" ? clampHeightOnInput : render);
@@ -1072,6 +1172,11 @@ function bindEvents() {
 
     if (event.target.closest("[data-infill-cut-file]")) {
       downloadInfillCutFile();
+      return;
+    }
+
+    if (event.target.closest("[data-infill-dxf]")) {
+      downloadInfillDxf();
       return;
     }
 
