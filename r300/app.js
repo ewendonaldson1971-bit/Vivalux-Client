@@ -48,6 +48,7 @@ const PT_PER_MM = 2.834645669;
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PRICE_MULTIPLIER = 1.4285714;
 const INFILL_PDF_MARGIN_MM = 0;
+const INFILL_CORNER_DETAIL_OFFSET_MM = 4;
 
 const INFILL_TEMPLATE = {
   minX: -140,
@@ -939,16 +940,30 @@ function makeTemplatePdf(width, height, guides) {
 function makeInfillCutFilePdf(width, height, cutHeight) {
   const fmt = (value) => Number(value).toFixed(3).replace(/\.?0+$/, "");
   const delta = cutHeight - INFILL_TEMPLATE.baseCutHeight;
-  const adjustY = (y) => y > INFILL_TEMPLATE.shiftY ? y + delta : y;
+  const maxY = INFILL_TEMPLATE.minY + INFILL_TEMPLATE.baseCutHeight;
+  const cornerDetailBottomY = 464;
+  const cornerDetailTopY = 474;
+  const moveCornerDetailY = (y) => {
+    if (y >= cornerDetailBottomY && y <= cornerDetailTopY) return y + INFILL_CORNER_DETAIL_OFFSET_MM;
+    if (y >= maxY - cornerDetailTopY + INFILL_TEMPLATE.minY && y <= maxY - cornerDetailBottomY + INFILL_TEMPLATE.minY) {
+      return y - INFILL_CORNER_DETAIL_OFFSET_MM;
+    }
+    return y;
+  };
+  const adjustY = (y) => {
+    const movedY = moveCornerDetailY(y);
+    return movedY > INFILL_TEMPLATE.shiftY ? movedY + delta : movedY;
+  };
   const xPt = (x) => (x - INFILL_TEMPLATE.minX + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
   const yPt = (y) => (adjustY(y) - INFILL_TEMPLATE.minY + INFILL_PDF_MARGIN_MM) * PT_PER_MM;
-  const dxfSweep = (start, end) => {
-    const sweep = (end - start + 360) % 360;
+  const shortestSweep = (start, end) => {
+    let sweep = ((end - start + 540) % 360) - 180;
+    if (sweep === -180) sweep = 180;
     return sweep || 360;
   };
   const arcCommands = ([cx, cy, r, startDeg, endDeg]) => {
     const commands = [];
-    const sweepDeg = dxfSweep(startDeg, endDeg);
+    const sweepDeg = shortestSweep(startDeg, endDeg);
     const segments = Math.max(1, Math.ceil(Math.abs(sweepDeg) / 90));
     const segmentSweep = (sweepDeg * Math.PI / 180) / segments;
     const centerX = xPt(cx);
