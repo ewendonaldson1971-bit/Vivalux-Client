@@ -6,19 +6,19 @@
   <title>Vivtrack 4 Builder</title>
   <style>
     :root {
-      --ink: #18211f;
-      --muted: #63706c;
-      --line: #d8dedb;
-      --line-strong: #aeb8b4;
-      --paper: #fbfcfb;
+      --ink: #2f3336;
+      --muted: #53565a;
+      --line: #d9dde1;
+      --line-strong: #aeb4ba;
+      --paper: #f7f8fa;
       --panel: #ffffff;
-      --field: #fff7b8;
-      --field-focus: #ffef6a;
-      --accent: #007a5f;
-      --accent-dark: #005742;
-      --blue: #225b82;
-      --rose: #ad3f56;
-      --shadow: 0 16px 38px rgba(27, 42, 38, 0.11);
+      --field: #ffffff;
+      --field-focus: #eff5fb;
+      --accent: #e4002b;
+      --accent-dark: #aa001f;
+      --blue: #53565a;
+      --rose: #e4002b;
+      --shadow: 0 16px 38px rgba(47, 51, 54, 0.12);
       --radius: 8px;
     }
 
@@ -30,11 +30,11 @@
       margin: 0;
       color: var(--ink);
       background:
-        linear-gradient(90deg, rgba(0, 122, 95, 0.08) 0 1px, transparent 1px 100%),
-        linear-gradient(0deg, rgba(0, 122, 95, 0.06) 0 1px, transparent 1px 100%),
+        linear-gradient(90deg, rgba(83, 86, 90, 0.055) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(83, 86, 90, 0.045) 0 1px, transparent 1px 100%),
         var(--paper);
       background-size: 42px 42px;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: var(--font-body, "Open Sans", "Segoe UI", Arial, Helvetica, sans-serif);
       letter-spacing: 0;
     }
 
@@ -58,7 +58,7 @@
       padding: 10px 24px;
       background: rgba(255, 255, 255, 0.96);
       border-bottom: 1px solid var(--line);
-      box-shadow: 0 8px 24px rgba(24, 33, 31, 0.08);
+      box-shadow: 0 8px 24px rgba(83, 86, 90, 0.10);
     }
 
     .app-tabs a {
@@ -78,7 +78,7 @@
 
     .app-tabs a.active {
       border-color: var(--accent);
-      background: #eef8f4;
+      background: #fff1f3;
       color: var(--accent-dark);
     }
 
@@ -96,7 +96,7 @@
       padding: 24px;
       background: rgba(255, 255, 255, 0.93);
       border-right: 1px solid var(--line);
-      box-shadow: 10px 0 28px rgba(24, 33, 31, 0.05);
+      box-shadow: 10px 0 28px rgba(83, 86, 90, 0.06);
     }
 
     .main {
@@ -140,8 +140,8 @@
       min-height: 32px;
       padding: 6px 10px;
       border: 1px solid var(--line);
-      background: #eef8f4;
-      color: var(--accent-dark);
+      background: #e8f2df;
+      color: #5fa825;
       border-radius: var(--radius);
       font-size: 12px;
       font-weight: 700;
@@ -153,8 +153,8 @@
       width: 8px;
       height: 8px;
       border-radius: 999px;
-      background: var(--accent);
-      box-shadow: 0 0 0 4px rgba(0, 122, 95, 0.12);
+      background: #74bf2f;
+      box-shadow: 0 0 0 4px rgba(116, 191, 47, 0.16);
     }
 
     .page-switch {
@@ -181,7 +181,7 @@
 
     .page-switch a.active {
       border-color: var(--accent);
-      background: #eef8f4;
+      background: #fff1f3;
       color: var(--accent-dark);
     }
 
@@ -379,7 +379,7 @@
       padding: 24px;
       background:
         linear-gradient(135deg, rgba(255,255,255,0.72), rgba(226,238,235,0.72)),
-        repeating-linear-gradient(45deg, rgba(0, 122, 95, 0.08) 0 10px, transparent 10px 20px);
+        repeating-linear-gradient(45deg, rgba(83, 86, 90, 0.055) 0 10px, transparent 10px 20px);
       border: 1px solid var(--line);
       border-radius: var(--radius);
     }
@@ -475,7 +475,7 @@
 
     th {
       color: #34413d;
-      background: #f4f7f6;
+      background: #ffffff;
       font-size: 11px;
       text-transform: uppercase;
     }
@@ -500,18 +500,23 @@
       grid-template-columns: 1fr auto;
       gap: 10px;
       align-items: center;
-      min-height: 54px;
-      padding: 11px 12px;
+      min-height: 50px;
+      padding: 10px 14px;
       text-decoration: none;
       color: #ffffff;
-      background: var(--accent);
-      border-radius: var(--radius);
-      border: 1px solid var(--accent-dark);
-      box-shadow: 0 8px 18px rgba(0, 122, 95, 0.18);
+      background: #348be2;
+      border-radius: 999px;
+      border: 1px solid #348be2;
+      box-shadow: 0 4px 10px rgba(52, 139, 226, 0.24);
+      font-size: 0.82rem;
+      font-weight: 600;
+      line-height: 1.2;
     }
 
     .cart-button:hover {
-      background: var(--accent-dark);
+      border-color: #498ddc;
+      background: #498ddc;
+      box-shadow: 0 8px 18px rgba(52, 139, 226, 0.28);
     }
 
     button.cart-button {
@@ -523,44 +528,45 @@
 
     .cart-button span {
       min-width: 0;
-      font-weight: 800;
+      font-weight: 600;
     }
 
     .cart-button small {
-      color: rgba(255, 255, 255, 0.76);
-      font-size: 11px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.72rem;
+      font-weight: 600;
       text-align: right;
       white-space: nowrap;
     }
 
     .secondary {
-      background: var(--blue);
-      border-color: #18435f;
-      box-shadow: 0 8px 18px rgba(34, 91, 130, 0.18);
+      background: #348be2;
+      border-color: #348be2;
+      box-shadow: 0 4px 10px rgba(52, 139, 226, 0.24);
     }
 
     .secondary:hover {
-      background: #18435f;
+      background: #498ddc;
     }
 
     .rose {
-      background: var(--rose);
-      border-color: #7c2c3e;
-      box-shadow: 0 8px 18px rgba(173, 63, 86, 0.17);
+      background: #348be2;
+      border-color: #348be2;
+      box-shadow: 0 4px 10px rgba(52, 139, 226, 0.24);
     }
 
     .rose:hover {
-      background: #7c2c3e;
+      background: #498ddc;
     }
 
     .combo {
-      background: #000000;
-      border-color: #000000;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+      background: #348be2;
+      border-color: #348be2;
+      box-shadow: 0 4px 10px rgba(52, 139, 226, 0.24);
     }
 
     .combo:hover {
-      background: #171717;
+      background: #498ddc;
     }
 
     .description-block {
@@ -711,8 +717,8 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="brand.css">
-  <link rel="stylesheet" href="auth.css">
+  <link rel="stylesheet" href="brand.css?v=vivad-cart-blue-20260725">
+  <link rel="stylesheet" href="auth.css?v=vivad-style-20260725">
   <script src="auth.js"></script>
 </head>
 <body>
@@ -1979,7 +1985,7 @@
           const h = result.panelHeights[row] * scaleY;
           ctx.fillStyle = (row + col) % 2 === 0 ? "rgba(255, 255, 255, 0.88)" : "rgba(250, 252, 247, 0.88)";
           ctx.fillRect(x, y, w, h);
-          ctx.strokeStyle = "rgba(0, 122, 95, 0.28)";
+          ctx.strokeStyle = "rgba(228, 0, 43, 0.24)";
           ctx.lineWidth = 1;
           ctx.strokeRect(x + 0.5, y + 0.5, Math.max(0, w - 1), Math.max(0, h - 1));
         }

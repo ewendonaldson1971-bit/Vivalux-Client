@@ -739,10 +739,10 @@ function renderDiagram(calc) {
     <svg viewBox="0 0 760 520" role="img" aria-label="R300 Halo isometric diagram with 300mm radius corners">
       <defs>
         <marker id="arrow" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto" markerUnits="strokeWidth">
-          <path d="M 0 0 L 8 4 L 0 8 z" fill="#34413d"/>
+          <path d="M 0 0 L 8 4 L 0 8 z" fill="#53565a"/>
         </marker>
       </defs>
-      <rect x="0" y="0" width="760" height="520" fill="#f4f7f6"/>
+      <rect x="0" y="0" width="760" height="520" fill="#f7f8fa"/>
       <g fill="none" stroke-linecap="round" stroke-linejoin="round">
         ${guides}
         ${dimWidth}
