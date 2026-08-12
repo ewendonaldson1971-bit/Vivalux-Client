@@ -13,7 +13,16 @@
 
   function safeReadSession() {
     try {
-      return JSON.parse(sessionStorage.getItem(SESSION_KEY) || "null");
+      var sharedSession = localStorage.getItem(SESSION_KEY);
+      if (sharedSession) return JSON.parse(sharedSession);
+
+      // Migrate sessions created before login was shared across browser tabs.
+      var tabSession = sessionStorage.getItem(SESSION_KEY);
+      if (tabSession) {
+        localStorage.setItem(SESSION_KEY, tabSession);
+        return JSON.parse(tabSession);
+      }
+      return null;
     } catch {
       return null;
     }
@@ -21,14 +30,16 @@
 
   function safeWriteSession(user) {
     try {
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+      sessionStorage.removeItem(SESSION_KEY);
     } catch {
-      /* Session storage can be blocked; the current page still gets the user. */
+      /* Browser storage can be blocked; the current page still gets the user. */
     }
   }
 
   function safeClearSession() {
     try {
+      localStorage.removeItem(SESSION_KEY);
       sessionStorage.removeItem(SESSION_KEY);
     } catch {
       /* Ignore storage errors. */
@@ -536,6 +547,27 @@
     },
     checkLogin: authenticateUser
   };
+
+  window.addEventListener("storage", function (event) {
+    if (event.key !== SESSION_KEY) return;
+
+    var user = null;
+    try {
+      user = JSON.parse(event.newValue || "null");
+    } catch {
+      user = null;
+    }
+
+    if (user && user.pricingToken) {
+      unlock(user);
+      return;
+    }
+
+    window.__vivaluxCurrentUser = null;
+    renderUserBar();
+    showLogin();
+    refreshPricing();
+  });
 
   document.addEventListener("DOMContentLoaded", function () {
     bindCartNotifications();
