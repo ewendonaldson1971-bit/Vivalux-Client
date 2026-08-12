@@ -47,6 +47,7 @@ const CONSTANTS = {
 const PT_PER_MM = 2.834645669;
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PRICE_MULTIPLIER = 1.4285714;
+let configuredPriceMultiplier = PRICE_MULTIPLIER;
 const INFILL_PDF_MARGIN_MM = 0;
 
 const INFILL_TEMPLATE = {
@@ -160,7 +161,7 @@ function money(value) {
 function increasedPrice(value) {
   const number = Number(value);
   const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
-  return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+  return Number.isFinite(number) ? number * configuredPriceMultiplier * discountMultiplier : 0;
 }
 
 function numberValue(input, fallback) {
@@ -1183,3 +1184,13 @@ restoreSharedFrameDimensions();
 bindEvents();
 saveSharedFrameDimensions();
 render();
+window.VivaluxPricing.register("r300", (config, merge) => {
+  configuredPriceMultiplier = Number(config.priceMultiplier) || PRICE_MULTIPLIER;
+  merge(FABRICS, config.fabrics || []);
+  merge(SHAPES, config.shapes || {});
+  merge(PACKING_LENGTHS, config.packingLengths || []);
+  merge(CONSTANTS, config.constants || {});
+  renderFabricOptions();
+  renderPackingOptions();
+  render();
+});

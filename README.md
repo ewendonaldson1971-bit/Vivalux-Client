@@ -15,6 +15,16 @@ Open `index.html` in a browser.
 - R300 builder (`r300/`)
 - Shared Vivad branding and product imagery
 
+## Pricing configuration boundary
+
+The five builder pages remain the frontend for product inputs, diagrams and cart presentation.
+Backlit, Edgelit, R300, Palisade and Cube pricing configuration is loaded from the Pricing
+Configurator API through `pricing-config.js`.
+
+On sign-in, `auth.js` exchanges the same Vivalux Apps Script credentials for a short-lived
+Pricing Configurator bearer token. Embedded configuration remains temporarily as a fallback
+if the backend cannot be reached.
+
 ## Login, access request and cart-click emails
 
 Login validation, login notifications, access request emails and add-to-cart click emails require a deployed Google Apps Script Web App. To send from `vivad1958@gmail.com`, sign in to Apps Script as `vivad1958@gmail.com`, copy `login-notification-apps-script.gs` into Apps Script, deploy it as a Web App with "Execute as me" and access set to "Anyone", then paste the `/exec` Web App URL into `LOGIN_NOTIFICATION_URL` in `auth.js`.

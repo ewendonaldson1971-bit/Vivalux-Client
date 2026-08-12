@@ -719,7 +719,8 @@
   </style>
   <link rel="stylesheet" href="brand.css?v=vivad-cart-blue-20260725">
   <link rel="stylesheet" href="auth.css?v=vivad-style-20260725">
-  <script src="auth.js"></script>
+<script src="auth.js"></script>
+<script src="pricing-config.js"></script>
 </head>
 <body>
   <nav class="app-tabs" aria-label="Application pages">
@@ -1167,7 +1168,7 @@
     function increasedPrice(value) {
       const number = Number(value);
       const discountMultiplier = window.VivaluxAuth?.getDiscountMultiplier?.() ?? 1;
-      return Number.isFinite(number) ? number * PRICE_MULTIPLIER * discountMultiplier : 0;
+      return Number.isFinite(number) ? number * (DATA.priceMultiplier || PRICE_MULTIPLIER) * discountMultiplier : 0;
     }
 
     function urlInt(value) {
@@ -2840,6 +2841,7 @@
     updatePowerSupplyOptions();
     bindEvents();
     render();
+    window.VivaluxPricing.register("backlit", (config, merge) => { merge(DATA, config); render(); });
   </script>
 </body>
 </html>

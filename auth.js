@@ -5,6 +5,7 @@
   var AUTH_CHANGE_EVENT = "vivalux-auth-change";
   // Deployed Google Apps Script Web App URL for login, emails and cart notifications.
   var LOGIN_NOTIFICATION_URL = "https://script.google.com/macros/s/AKfycbzf1aPV_TjMYsUcGry51I9bErT9JL_waBIUDtvJPlePr6BOwg8gcYqEGy7f5wNuRtO6/exec";
+  var PRICING_TOKEN_URL = "https://vivad-pricing-configurator.vivad-gpt-0611.chatgpt.site/api/auth/token";
   var currentScript = document.currentScript;
   var rootUrl = currentScript ? new URL("./", currentScript.src) : new URL("./", window.location.href);
 
@@ -241,11 +242,24 @@
         error.code = result && result.error;
         throw error;
       }
-      return {
+      var authenticatedUser = {
         username: result.user.username,
         discountPercentage: parseDiscount(result.user.discountPercentage),
         signedInAt: new Date().toISOString()
       };
+      return fetch(PRICING_TOKEN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ username: username, password: password })
+      }).then(function (response) {
+        if (!response.ok) throw new Error("Pricing token unavailable.");
+        return response.json();
+      }).then(function (pricing) {
+        authenticatedUser.pricingToken = pricing.token;
+        return authenticatedUser;
+      }).catch(function () {
+        return authenticatedUser;
+      });
     });
   }
 
