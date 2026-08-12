@@ -2,3 +2,5 @@
   command = "echo 'Static site - no build required'"
   publish = "."
 
+[build.environment]
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
