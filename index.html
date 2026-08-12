@@ -1588,7 +1588,7 @@
         customColour,
         colour: colourChoice === "Other" ? customColour || "Other" : colourChoice,
         skin: DATA.skins.find((item) => item.id === fields.skin.value) || DATA.skins[0],
-        margin: 2.4,
+        margin: Number.isFinite(DATA.margin) ? DATA.margin : 2.4,
         skinRate: DATA.constants.skinSqmPrice
       };
     }
