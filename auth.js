@@ -540,6 +540,11 @@
   document.addEventListener("DOMContentLoaded", function () {
     bindCartNotifications();
     var user = getCurrentUser();
+    if (user && !user.pricingToken) {
+      safeClearSession();
+      window.__vivaluxCurrentUser = null;
+      user = null;
+    }
     if (user) {
       unlock(user);
     } else {

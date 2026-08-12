@@ -31,6 +31,7 @@
     return fetch(API_BASE + "/api/v1/config/vivalux?product=" + encodeURIComponent(product), {
       headers: { Authorization: "Bearer " + user.pricingToken, Accept: "application/json" }
     }).then(function (response) {
+      if (response.status === 401 && window.VivaluxAuth) window.VivaluxAuth.signOut();
       if (!response.ok) throw new Error("Pricing configuration is unavailable.");
       return response.json();
     }).then(function (payload) {

@@ -2841,7 +2841,23 @@
     updatePowerSupplyOptions();
     bindEvents();
     render();
-    window.VivaluxPricing.register("backlit", (config, merge) => { merge(DATA, config); render(); });
+    window.VivaluxPricing.register("backlit", (config, merge) => {
+      const selectedExtrusionIndex = Math.max(0, fields.extrusion.selectedIndex);
+      const selectedPackingIndex = Math.max(0, fields.packingLength.selectedIndex);
+      const selectedPowerSupply = fields.powerSupply.value;
+      const selectedColour = fields.colour.value;
+      const selectedSkin = fields.skin.value;
+      merge(DATA, config);
+      [fields.extrusion, fields.packingLength, fields.powerSupply, fields.colour, fields.skin].forEach((field) => field.replaceChildren());
+      setupOptions();
+      fields.extrusion.selectedIndex = Math.min(selectedExtrusionIndex, DATA.extrusions.length - 1);
+      fields.packingLength.selectedIndex = Math.min(selectedPackingIndex, DATA.packingLengths.length - 1);
+      if (DATA.powerSupplies.some((item) => item.id === selectedPowerSupply)) fields.powerSupply.value = selectedPowerSupply;
+      if (DATA.colours.includes(selectedColour)) fields.colour.value = selectedColour;
+      if (DATA.skins.some((item) => item.id === selectedSkin)) fields.skin.value = selectedSkin;
+      updatePowerSupplyOptions();
+      render();
+    });
   </script>
 </body>
 </html>
