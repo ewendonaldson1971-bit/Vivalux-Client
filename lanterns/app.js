@@ -97,23 +97,49 @@ function ellipsePoint(index, count, cx, cy, rx, ry) {
   return { x: cx + Math.cos(angle) * rx, y: cy + Math.sin(angle) * ry };
 }
 
+function diagramGeometry(diameterMm, heightMm) {
+  const diameter = Math.max(1, Number(diameterMm) || 1);
+  const height = Math.max(1, Number(heightMm) || 1);
+  const ellipseRatio = 0.26;
+  const scale = Math.min(
+    500 / diameter,
+    330 / (height + diameter * ellipseRatio),
+  );
+  const cx = 380;
+  const rx = diameter * scale / 2;
+  const ry = rx * ellipseRatio;
+  const bodyHeight = height * scale;
+  const drawingTop = 88;
+  const drawingHeight = 342;
+  const topY = drawingTop + (drawingHeight - bodyHeight - ry * 2) / 2 + ry;
+  return {
+    cx,
+    rx,
+    ry,
+    bodyHeight,
+    topY,
+    bottomY: topY + bodyHeight,
+    leftX: cx - rx,
+    rightX: cx + rx,
+  };
+}
+
 function renderDiagram(calc) {
-  const topY = 150;
-  const bottomY = 390;
+  const drawing = diagramGeometry(calc.diameterMm, calc.heightMm);
   const braces = Array.from({ length: calc.miniBraceQty }, (_, index) => {
-    const top = ellipsePoint(index, calc.miniBraceQty, 380, topY, 245, 62);
-    const bottom = ellipsePoint(index, calc.miniBraceQty, 380, bottomY, 245, 62);
+    const top = ellipsePoint(index, calc.miniBraceQty, drawing.cx, drawing.topY, drawing.rx, drawing.ry);
+    const bottom = ellipsePoint(index, calc.miniBraceQty, drawing.cx, drawing.bottomY, drawing.rx, drawing.ry);
     return `<line class="cylinder-brace" x1="${top.x}" y1="${top.y}" x2="${bottom.x}" y2="${bottom.y}" />`;
   }).join("");
   const rigging = Array.from({ length: calc.riggingPointQty }, (_, index) => {
-    const point = ellipsePoint(index, Math.max(calc.riggingPointQty, 1), 380, topY, 245, 62);
+    const point = ellipsePoint(index, Math.max(calc.riggingPointQty, 1), drawing.cx, drawing.topY, drawing.rx, drawing.ry);
     return `<line class="cylinder-rigging" x1="${point.x}" y1="${point.y}" x2="${point.x}" y2="35"/><circle class="cylinder-point" cx="${point.x}" cy="${point.y}" r="5"/>`;
   }).join("");
   els.diagram.innerHTML = `<svg viewBox="0 0 760 520" role="img" aria-label="Isometric cylindrical hanging lantern layout">
-    <path class="cylinder-shell" d="M135 ${topY} A245 62 0 0 0 625 ${topY} L625 ${bottomY} A245 62 0 0 1 135 ${bottomY} Z" />
+    <path class="cylinder-shell" d="M${drawing.leftX} ${drawing.topY} A${drawing.rx} ${drawing.ry} 0 0 0 ${drawing.rightX} ${drawing.topY} L${drawing.rightX} ${drawing.bottomY} A${drawing.rx} ${drawing.ry} 0 0 1 ${drawing.leftX} ${drawing.bottomY} Z" />
     ${rigging}${braces}
-    <ellipse class="cylinder-ring cylinder-back" cx="380" cy="${topY}" rx="245" ry="62" />
-    <ellipse class="cylinder-ring" cx="380" cy="${bottomY}" rx="245" ry="62" />
+    <ellipse class="cylinder-ring cylinder-back" cx="${drawing.cx}" cy="${drawing.topY}" rx="${drawing.rx}" ry="${drawing.ry}" />
+    <ellipse class="cylinder-ring" cx="${drawing.cx}" cy="${drawing.bottomY}" rx="${drawing.rx}" ry="${drawing.ry}" />
     <text class="dim-labels" x="380" y="505" text-anchor="middle">Ø ${calc.diameterMm} mm · ${calc.heightMm} mm high · ${calc.suppliedSections} sections</text>
   </svg>`;
 }
