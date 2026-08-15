@@ -1,7 +1,7 @@
 (function () {
   "use strict";
 
-  var API_BASE = "https://vivad-pricing-configurator.vivad-gpt-0611.chatgpt.site";
+  var API_BASE = "https://vivadpricing-app.calmtree-53cc02bb.australiasoutheast.azurecontainerapps.io";
   var registrations = {};
 
   function merge(target, source) {

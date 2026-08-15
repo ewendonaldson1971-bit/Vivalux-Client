@@ -5,7 +5,7 @@
   var AUTH_CHANGE_EVENT = "vivalux-auth-change";
   // Deployed Google Apps Script Web App URL for login, emails and cart notifications.
   var LOGIN_NOTIFICATION_URL = "https://script.google.com/macros/s/AKfycbzf1aPV_TjMYsUcGry51I9bErT9JL_waBIUDtvJPlePr6BOwg8gcYqEGy7f5wNuRtO6/exec";
-  var PRICING_TOKEN_URL = "https://vivad-pricing-configurator.vivad-gpt-0611.chatgpt.site/api/auth/token";
+  var PRICING_TOKEN_URL = "https://vivadpricing-app.calmtree-53cc02bb.australiasoutheast.azurecontainerapps.io/api/auth/token";
   var currentScript = document.currentScript;
   var rootUrl = currentScript ? new URL("./", currentScript.src) : new URL("./", window.location.href);
 
