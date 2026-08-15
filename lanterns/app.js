@@ -16,11 +16,12 @@ const DATA = {
   miniBraceSpacingMm: 2000,
   miniBraceHeightOffsetMm: 77,
   rollingLengthMm: 5000,
+  packingLengths: [{ name: "A Pipe Rack 5.6M", mm: 5600 }, { name: "B LWB 3M", mm: 3000 }, { name: "C Van/Tray 2.5M", mm: 2500 }, { name: "D Car 1.5M", mm: 1500 }],
   fabrics: FABRICS,
 };
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PT_PER_MM = 2.834645669;
-const els = Object.fromEntries(["shortname", "diameter", "height", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText", "takeoff"].map((id) => [id, document.getElementById(id)]));
+const els = Object.fromEntries(["shortname", "diameter", "height", "maxPacking", "packingHint", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText", "takeoff"].map((id) => [id, document.getElementById(id)]));
 let pricingRequest = 0;
 let currentCalc = null;
 
@@ -43,9 +44,11 @@ function fabricByName(name) {
 function readInputs() {
   const diameterMm = Math.max(DATA.minimumDiameterMm, Math.round(Number(els.diameter.value) || 2000));
   const heightMm = Math.min(DATA.maximumHeightMm, Math.max(DATA.miniBraceHeightOffsetMm + 1, Math.round(Number(els.height.value) || 1000)));
+  const maxPackingLength = DATA.packingLengths.find((item) => item.name === els.maxPacking.value) || DATA.packingLengths[0];
   return {
     diameterMm,
     heightMm,
+    maxPackingLength,
     riggingPointQty: Math.max(0, Math.round(Number(els.riggingPoints.value) || 0)),
     outerFabric: fabricByName(els.outerFabric.value),
     innerFabric: fabricByName(els.innerFabric.value),
@@ -60,7 +63,10 @@ function geometry(input) {
   const innerDiameterMm = input.diameterMm - DATA.innerDiameterOffsetMm;
   const innerCircumferenceMm = Math.PI * innerDiameterMm;
   const miniBraceQty = Math.ceil(circumferenceMm / DATA.miniBraceSpacingMm);
-  const ringPieces = Math.ceil(circumferenceMm / DATA.rollingLengthMm) * 2;
+  const maximumRingSegmentLengthMm = Math.min(DATA.rollingLengthMm, input.maxPackingLength.mm);
+  const ringPiecesPerRing = Math.ceil(circumferenceMm / maximumRingSegmentLengthMm);
+  const ringSegmentLengthMm = circumferenceMm / ringPiecesPerRing;
+  const ringPieces = ringPiecesPerRing * 2;
   return {
     ...input,
     circumferenceMm,
@@ -69,7 +75,10 @@ function geometry(input) {
     miniBraceQty,
     miniBraceLengthMm: input.heightMm - DATA.miniBraceHeightOffsetMm,
     tensionLockQty: miniBraceQty * 2,
+    maximumRingSegmentLengthMm,
+    ringSegmentLengthMm,
     rollingLengthQty: ringPieces,
+    joinerQty: ringPieces * 2,
     suppliedSections: ringPieces + miniBraceQty,
   };
 }
@@ -179,6 +188,7 @@ async function render() {
   const calc = geometry(readInputs());
   currentCalc = calc;
   const request = ++pricingRequest;
+  els.packingHint.textContent = `${calc.maxPackingLength.mm}mm selected · ${Math.round(calc.ringSegmentLengthMm)}mm ring segments`;
   els.riggingHint.textContent = `Suggested: ${calc.miniBraceQty} — one rigging point for every mini brace.`;
   els.riggingLabel.textContent = `${calc.riggingPointQty} Rigging Points`;
   renderDiagram(calc);
@@ -188,6 +198,7 @@ async function render() {
     const quote = (await window.VivaluxPricing.quote("lanterns", {
       diameterMm: calc.diameterMm,
       heightMm: calc.heightMm,
+      maxPackingLengthMm: calc.maxPackingLength.mm,
       riggingPointQty: calc.riggingPointQty,
       outerFabric: calc.outerFabric.name,
       innerFabric: calc.innerFabric.name,
@@ -198,8 +209,12 @@ async function render() {
     calc.miniBraceQty = quote.miniBraceQty;
     calc.miniBraceLengthMm = quote.miniBraceLengthMm;
     calc.tensionLockQty = quote.tensionLockQty;
+    calc.maximumRingSegmentLengthMm = quote.maximumRingSegmentLengthMm;
+    calc.ringSegmentLengthMm = quote.ringSegmentLengthMm;
     calc.rollingLengthQty = quote.rollingLengthQty;
+    calc.joinerQty = quote.joinerQty;
     calc.suppliedSections = quote.suppliedSections;
+    els.packingHint.textContent = `${quote.maxPackingLengthMm}mm selected · ${Math.round(quote.ringSegmentLengthMm)}mm ring segments`;
     const cart = buildCart(calc, quote);
     els.metrics.innerHTML = [["Frame Price Ex GST", money(quote.frame.sell)], ["Graphics Price Ex GST", money(quote.graphicsTotal.sell)], ["Total Price Ex GST", money(quote.total.sell)]].map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`).join("");
     els.descriptionText.value = cart.descriptionText;
@@ -270,7 +285,14 @@ function renderFabricOptions() {
   els.outerFabric.value = fabricByName(outer).name; els.innerFabric.value = fabricByName(inner).name;
 }
 
+function renderPackingOptions() {
+  const selected = els.maxPacking.value || DATA.packingLengths[0]?.name;
+  els.maxPacking.innerHTML = DATA.packingLengths.map((item) => `<option value="${item.name}">${item.name}</option>`).join("");
+  els.maxPacking.value = DATA.packingLengths.some((item) => item.name === selected) ? selected : DATA.packingLengths[0]?.name || "";
+}
+
 [els.shortname, els.diameter, els.height, els.riggingPoints, els.outerFabric, els.outerQuantity, els.innerFabric, els.innerQuantity].forEach((input) => input.addEventListener("input", render));
+[els.maxPacking].forEach((input) => input.addEventListener("change", render));
 [els.diameter, els.height].forEach((input) => input.addEventListener("blur", enforceLimits));
 document.addEventListener("click", (event) => {
   const templateButton = event.target.closest("[data-template]");
@@ -284,11 +306,13 @@ document.addEventListener("click", (event) => {
 });
 
 renderFabricOptions();
+renderPackingOptions();
 render();
 window.VivaluxPricing.register("lanterns", (config, merge) => {
   const connected = config || {};
   Object.keys(connected).filter((key) => key !== "fabrics").forEach((key) => { DATA[key] = connected[key]; });
   if (Array.isArray(connected.fabrics)) merge(DATA.fabrics, connected.fabrics);
   renderFabricOptions();
+  renderPackingOptions();
   render();
 });
