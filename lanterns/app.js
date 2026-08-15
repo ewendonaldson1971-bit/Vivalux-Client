@@ -74,17 +74,33 @@ function geometry(input) {
   };
 }
 
-function description(calc) {
-  return `Quantity: 1 Cylindrical Hanging Lantern. Outer Diameter: ${calc.diameterMm}mm Height: ${calc.heightMm}mm. Includes ${calc.riggingPointQty} Rigging Points ${calc.miniBraceQty} minibraces. Supplied in ${calc.suppliedSections} Sections.`;
+function description(calc, quote) {
+  const base = `Quantity: 1 Cylindrical Hanging Lantern. Outer Diameter: ${calc.diameterMm}mm Height: ${calc.heightMm}mm.\nIncludes ${calc.riggingPointQty} Rigging Points and ${calc.miniBraceQty} minibraces.\nSupplied in ${calc.suppliedSections} Sections.`;
+  if (!quote) return base;
+  return `${base}\nPacking Dimensions: ${quote.packingLengthCm}cm (l) x ${quote.packingWidthCm}cm (w) x ${quote.packingHeightCm}cm (h).\nTotal Weight Frame and Graphics: ${Math.ceil(quote.totalWeightKg)}Kg`;
 }
 
 function cartUrl(params) {
   return `${CART_BASE}?${query(params)}`;
 }
 
+function frameCartParams(calc, quote, descriptionText) {
+  return {
+    qcode: quote.frameQcode || DATA.frameQcode,
+    quantity: 1,
+    shortname: calc.shortname,
+    description: descriptionText,
+    packinglengthcm: quote.packingLengthCm,
+    packingwidthcm: quote.packingWidthCm,
+    packingheightcm: quote.packingHeightCm,
+    weightkg: Math.ceil(quote.totalWeightKg),
+    price: Math.ceil(quote.frame.sell),
+  };
+}
+
 function buildCart(calc, quote) {
-  const descriptionText = description(calc);
-  const frameUrl = cartUrl({ qcode: DATA.frameQcode, quantity: 1, shortname: calc.shortname, description: descriptionText, price: Math.ceil(quote.frame.sell) });
+  const descriptionText = description(calc, quote);
+  const frameUrl = cartUrl(frameCartParams(calc, quote, descriptionText));
   const outer = quote.graphics.find((item) => item.id === "outer");
   const inner = quote.graphics.find((item) => item.id === "inner");
   const outerUrl = calc.outerQuantity ? cartUrl({ qcode: calc.outerFabric.qcode, quantity: calc.outerQuantity, width: Math.round(calc.circumferenceMm), height: calc.heightMm, shortname: `${calc.shortname} Outer Graphic`, price: Math.ceil(outer.unitSell) }) : null;
@@ -151,7 +167,7 @@ function renderTakeoff(quote) {
 function renderButtons(cart) {
   const frameUrls = [cart.frameUrl];
   const buttons = [
-    { label: "Add Frame to Cart", code: DATA.frameQcode, urls: frameUrls },
+    { label: "Add Frame to Cart", code: cart.frameUrl ? new URL(cart.frameUrl).searchParams.get("qcode") : DATA.frameQcode, urls: frameUrls },
     { label: "Add Graphics to Cart", code: "Graphics", urls: cart.graphicsUrls, className: "secondary", disabled: !cart.graphicsUrls.length },
     { label: "Add Frame and Graphics to Cart", code: "Bundle", urls: [...frameUrls, ...cart.graphicsUrls], className: "combo" },
   ];
