@@ -772,7 +772,9 @@
         { label: "4 Edgelit Top Only", edges: ["top"] },
         { label: "5 Edgelit Bottom Only", edges: ["bottom"] },
         { label: "6 Edgelit Left Only", edges: ["left"] },
-        { label: "7 Edgelit Right Only", edges: ["right"] }
+        { label: "7 Edgelit Right Only", edges: ["right"] },
+        { label: "8 Edgelit Top and 2 Sides", edges: ["top", "left", "right"] },
+        { label: "9 Edgelit Bottom and 2 Sides", edges: ["bottom", "left", "right"] }
       ],
       leds: {
         six: { label: "6Up-438cm-15.6W", units: 6, watts: 15.6, cost: 13.34, multiplier: 1.89, weight: 100 },
@@ -1134,12 +1136,20 @@
       return parts.length ? parts.join(", ") : "No LEDs";
     }
 
+    function litEdgesDescription(cfg) {
+      const names = cfg.lighting.edges.map((edge) => edge.charAt(0).toUpperCase() + edge.slice(1));
+      if (!names.length) return "None";
+      if (names.length === 1) return names[0];
+      return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+    }
+
     function description(cfg, calc) {
       const lines = [
         `${cfg.sides} Light Box`,
         `Box Size: ${Math.round(cfg.width)}mm (w) x ${Math.round(cfg.height)} mm (h)`,
         cfg.extrusion.name,
         cfg.lighting.label.replace(/^\d+\s*/, ""),
+        `Illuminated edges: ${litEdgesDescription(cfg)}`,
         `LEDs: ${ledDescription(calc)}`,
         `Total Power: ${calc.totalPower.toFixed(1)} Watts`,
         `QTY ${calc.powerQty} QTY:${calc.powerQty} off ${calc.powerSpec.label}`,
