@@ -14,6 +14,10 @@ test("shares builder login independently of the pricing token", async () => {
   assert.match(auth, /if \(user && user\.username\)/);
   assert.doesNotMatch(auth, /if \(user && !user\.pricingToken\)/);
   assert.match(auth, /clearPricingToken: safeClearPricingToken/);
+  assert.equal((auth.match(/https:\/\/vivadpricing-app|https:\/\/vivad-pricing-configurator/g) ?? []).length, 2);
+  assert.match(auth, /requestPricingToken\(username, password, index \+ 1\)/);
+  assert.match(auth, /authenticatedUser\.pricingApiBase = pricing\.apiBase/);
+  assert.equal((pricing.match(/user\.pricingApiBase \|\| API_BASE/g) ?? []).length, 2);
   assert.doesNotMatch(pricing, /response\.status === 401[^\n]+signOut/);
   assert.equal((pricing.match(/response\.status === 401[^\n]+clearPricingToken/g) ?? []).length, 2);
 });

@@ -28,7 +28,8 @@
     var registration = registrations[product];
     var user = window.VivaluxAuth && window.VivaluxAuth.getUser();
     if (!registration || !user || !user.pricingToken) return Promise.resolve(false);
-    return fetch(API_BASE + "/api/v1/config/vivalux?product=" + encodeURIComponent(product), {
+    var apiBase = user.pricingApiBase || API_BASE;
+    return fetch(apiBase + "/api/v1/config/vivalux?product=" + encodeURIComponent(product), {
       headers: { Authorization: "Bearer " + user.pricingToken, Accept: "application/json" }
     }).then(function (response) {
       if (response.status === 401 && window.VivaluxAuth) window.VivaluxAuth.clearPricingToken();
@@ -47,7 +48,8 @@
   function quote(product, takeoff) {
     var user = window.VivaluxAuth && window.VivaluxAuth.getUser();
     if (!user || !user.pricingToken) return Promise.reject(new Error("Sign in to load pricing."));
-    return fetch(API_BASE + "/api/v1/pricing/vivalux/quote", {
+    var apiBase = user.pricingApiBase || API_BASE;
+    return fetch(apiBase + "/api/v1/pricing/vivalux/quote", {
       method: "POST",
       headers: {
         Authorization: "Bearer " + user.pricingToken,
