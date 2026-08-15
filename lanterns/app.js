@@ -227,8 +227,8 @@ async function render() {
 
 function fmt(value) { return Number(value).toFixed(3).replace(/\.?0+$/, ""); }
 
-function makeTemplatePdf(width, height, guides) {
-  const content = ["q", "0.4 G", "0.6 w", `0.5 0.5 ${fmt(width - 1)} ${fmt(height - 1)} re S`, "0.8 G", "0.5 w", ...guides.map((x) => `${fmt(x)} 0 m ${fmt(x)} ${fmt(height)} l S`), "Q"].join("\n");
+function makeTemplatePdf(width, height) {
+  const content = ["q", "0.4 G", "0.6 w", `0.5 0.5 ${fmt(width - 1)} ${fmt(height - 1)} re S`, "Q"].join("\n");
   let pdf = "%PDF-1.4\n";
   const offsets = [0];
   const addObject = (id, body) => { offsets[id] = pdf.length; pdf += `${id} 0 obj\n${body}\nendobj\n`; };
@@ -248,9 +248,7 @@ function downloadTemplate(kind) {
   const lengthMm = kind === "outer" ? calc.circumferenceMm : calc.innerCircumferenceMm;
   const scaledWidthMm = lengthMm / 10;
   const scaledHeightMm = calc.heightMm / 10;
-  const guides = [];
-  for (let positionMm = DATA.rollingLengthMm; positionMm < lengthMm; positionMm += DATA.rollingLengthMm) guides.push((positionMm / 10) * PT_PER_MM);
-  const pdf = makeTemplatePdf(scaledWidthMm * PT_PER_MM, scaledHeightMm * PT_PER_MM, guides);
+  const pdf = makeTemplatePdf(scaledWidthMm * PT_PER_MM, scaledHeightMm * PT_PER_MM);
   const url = URL.createObjectURL(new Blob([pdf], { type: "application/pdf" }));
   const anchor = document.createElement("a");
   anchor.href = url;
