@@ -1110,7 +1110,7 @@
         .join("&")}`;
     }
 
-    function graphicUrl(item) {
+    function graphicUrl(item, unitPrice) {
       if (!item.material.qcode || item.qty <= 0) return "";
       return cartUrl({
         qcode: item.material.qcode,
@@ -1118,9 +1118,11 @@
         width: whole(item.width),
         height: whole(item.height),
         shortname: item.label,
-        price: increasedPrice(item.priceEa)
+        price: Number.isFinite(unitPrice) ? unitPrice : ""
       });
     }
+
+    let pricingRequest = 0;
 
     function openCartUrlsSequentially(urls) {
       const queue = urls.filter(Boolean);
@@ -1224,36 +1226,54 @@
       `;
     }
 
-    function render() {
+    async function render() {
       const result = calculate();
-      $("framePrice").textContent = money(increasedPrice(result.framePrice));
+      const request = ++pricingRequest;
+      let quote;
+      try {
+        quote = (await window.VivaluxPricing.quote("palisade", {
+          typeName: result.cfg.typeName, shapeName: result.cfg.shapeName, horizontalMm: result.horizontalMm,
+          heightMm: result.cfg.height, crossBraces: result.crossBraces, verticalBraceLengthMm: result.verticalBraceLength,
+          tensionLocks: result.tensionLocks, includeRigging: result.cfg.includeRigging, numberRiggingPoints: result.numberRiggingPoints,
+          joinerPairQty: result.cfg.joinerPairQty,
+          graphics: result.graphics.map((item) => ({ id: item.key, material: Object.keys(DATA.graphics).find((key) => DATA.graphics[key] === item.material), quantity: item.qty, widthMm: item.width, heightMm: item.height }))
+        })).calculation;
+      } catch (error) {
+        if (request === pricingRequest) $("grandTotal").textContent = error.message || "Pricing unavailable";
+        return;
+      }
+      if (request !== pricingRequest) return;
+      const graphicPricing = new Map(quote.graphics.map((item) => [item.id, item]));
+      const riggingPricing = quote.components.find((item) => item.id === "rigging");
+      const frameUrl = new URL(result.frameUrl); frameUrl.searchParams.set("price", quote.frame.sell); result.frameUrl = frameUrl.href;
+      $("framePrice").textContent = money(quote.frame.sell);
       $("frameMeta").textContent = `${result.cfg.typeName}, ${result.cfg.shapeName}${result.cfg.includeRigging ? `, ${result.numberRiggingPoints} rigging points` : ""}`;
-      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(increasedPrice(result.numberRiggingPoints * DATA.rigging.unitCost))} Ex GST)`;
-      $("graphicsPrice").textContent = money(increasedPrice(result.graphicsTotal));
-      $("grandTotal").textContent = money(increasedPrice(result.grandTotal));
+      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(riggingPricing?.sell || 0)} Ex GST)`;
+      $("graphicsPrice").textContent = money(quote.graphicsTotal.sell);
+      $("grandTotal").textContent = money(quote.total.sell);
       $("description").value = result.description;
       $("productPhoto").src = result.cfg.typeName === "Palisade 60mm" ? "palisade-60mm.jpg" : "palisade-100mm.jpg";
       $("productPhoto").alt = result.cfg.typeName === "Palisade 60mm" ? "60mm Palisade photo" : "100mm Palisade photo";
       result.graphics.forEach((item) => {
         $(`${item.key}Size`).textContent = `${whole(item.width)} x ${whole(item.height)} mm`;
       });
-      $("lineItems").innerHTML = result.lines.filter((line) => line.qty > 0).map((line) => `
+      $("lineItems").innerHTML = [...quote.components.map((line) => ({ item: line.label, qty: line.quantity, size: "", sell: line.sell })), ...result.graphics.filter((item) => item.qty > 0).map((item) => ({ item: `${item.material.qcode} ${item.label}`, qty: item.qty, size: `${whole(item.width)} x ${whole(item.height)} mm`, sell: graphicPricing.get(item.key)?.sell || 0 }))].filter((line) => line.qty > 0).map((line) => `
         <tr>
           <td>${line.item}</td>
           <td class="num">${line.qty}</td>
           <td class="num">${line.size}</td>
-          <td class="num">${money(increasedPrice(line.cost))}</td>
+          <td class="num">${money(line.sell)}</td>
         </tr>
       `).join("") + `
         <tr>
           <td><strong>Total Frame</strong></td>
           <td class="num"></td>
           <td class="num"></td>
-          <td class="num"><strong>${money(increasedPrice(result.framePrice))}</strong></td>
+          <td class="num"><strong>${money(quote.frame.sell)}</strong></td>
         </tr>
       `;
 
-      const graphicUrls = result.graphics.map(graphicUrl).filter(Boolean);
+      const graphicUrls = result.graphics.map((item) => graphicUrl(item, graphicPricing.get(item.key)?.unitSell)).filter(Boolean);
       const graphicQty = result.graphics.reduce((sum, item) => sum + (item.material.qcode ? item.qty : 0), 0);
       const allUrls = [result.frameUrl, ...graphicUrls].filter(Boolean);
       const allLabel = result.cfg.includeRigging

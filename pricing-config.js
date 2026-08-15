@@ -44,9 +44,30 @@
     });
   }
 
+  function quote(product, takeoff) {
+    var user = window.VivaluxAuth && window.VivaluxAuth.getUser();
+    if (!user || !user.pricingToken) return Promise.reject(new Error("Sign in to load pricing."));
+    return fetch(API_BASE + "/api/v1/pricing/vivalux/quote", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + user.pricingToken,
+        Accept: "application/json",
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ product: product, takeoff: takeoff })
+    }).then(function (response) {
+      if (response.status === 401 && window.VivaluxAuth) window.VivaluxAuth.signOut();
+      return response.json().then(function (payload) {
+        if (!response.ok) throw new Error(payload.error || "Pricing is unavailable.");
+        return payload;
+      });
+    });
+  }
+
   window.VivaluxPricing = {
     apiBase: API_BASE,
     merge: merge,
+    quote: quote,
     register: function (product, apply) {
       registrations[product] = apply;
       return load(product);

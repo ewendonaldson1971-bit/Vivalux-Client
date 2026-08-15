@@ -908,7 +908,7 @@
       };
     }
 
-    function insertUrl(item) {
+    function insertUrl(item, unitPrice) {
       if (item.qty <= 0) return "";
       return cartUrl({
         qcode: item.material.qcode,
@@ -916,9 +916,11 @@
         width: whole(item.width),
         height: whole(item.height),
         shortname: item.label,
-        price: increasedPrice(item.areaEach * DATA.printRate).toFixed(2)
+        price: Number.isFinite(unitPrice) ? unitPrice.toFixed(2) : ""
       });
     }
+
+    let pricingRequest = 0;
 
     function renderDiagram(result) {
       const { cfg } = result;
@@ -996,37 +998,62 @@
       `;
     }
 
-    function render() {
+    async function render() {
       const result = calculate();
-      $("framePrice").textContent = money(increasedPrice(result.framePrice));
+      const request = ++pricingRequest;
+      let quote;
+      try {
+        quote = (await window.VivaluxPricing.quote("cube", {
+          widthExtrusionMm: result.widthExtrusionMm,
+          depthExtrusionMm: result.depthExtrusionMm,
+          heightExtrusionMm: result.heightExtrusionMm,
+          minibraceQty: result.minibraceQty,
+          minibraceLength: result.minibraceLength,
+          tensionLockQty: result.tensionLockQty,
+          cornerQty: result.cornerQty,
+          includeRigging: result.cfg.includeRigging,
+          numberRiggingPoints: result.numberRiggingPoints,
+          inserts: result.inserts.map((item) => ({ id: item.key, material: Object.keys(DATA.graphics).find((key) => DATA.graphics[key] === item.material), quantity: item.qty, widthMm: item.width, heightMm: item.height }))
+        })).calculation;
+      } catch (error) {
+        if (request === pricingRequest) $("grandTotal").textContent = error.message || "Pricing unavailable";
+        return;
+      }
+      if (request !== pricingRequest) return;
+      const graphicPricing = new Map(quote.graphics.map((item) => [item.id, item]));
+      const riggingPricing = quote.components.find((item) => item.id === "rigging");
+      const frameUrl = new URL(result.frameUrl);
+      frameUrl.searchParams.set("price", quote.frame.sell.toFixed(2));
+      result.frameUrl = frameUrl.href;
+      $("framePrice").textContent = money(quote.frame.sell);
       $("frameMeta").textContent = `${result.minibraceQty} minibraces, ${result.tensionLockQty} tension locks${result.cfg.includeRigging ? `, ${result.numberRiggingPoints} rigging points` : ""}`;
-      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(increasedPrice(result.numberRiggingPoints * DATA.riggingPointCost))} Ex GST)`;
-      $("graphicsPrice").textContent = money(increasedPrice(result.graphicsPrice));
-      $("grandTotal").textContent = money(increasedPrice(result.framePrice + result.graphicsPrice));
+      $("riggingLabel").textContent = `Include ${result.numberRiggingPoints} Rigging Points (+${money(riggingPricing?.sell || 0)} Ex GST)`;
+      $("graphicsPrice").textContent = money(quote.graphicsTotal.sell);
+      $("grandTotal").textContent = money(quote.total.sell);
       $("description").value = result.description;
-      $("lineItems").innerHTML = result.lines.filter((line) => line.qty > 0).map((line) => `
+      $("lineItems").innerHTML = [...quote.components.map((line) => ({ item: line.label, qty: line.quantity, size: "", sell: line.sell })), ...result.inserts.filter((item) => item.qty > 0).map((item) => ({ item: `${item.material.name} ${item.label}`, qty: item.qty, size: `${whole(item.width)} x ${whole(item.height)} mm`, sell: graphicPricing.get(item.key)?.sell || 0 }))].filter((line) => line.qty > 0).map((line) => `
         <tr>
           <td>${line.item}</td>
           <td class="num">${line.qty}</td>
           <td class="num">${line.size}</td>
-          <td class="num">${money(increasedPrice(line.cost))}</td>
+          <td class="num">${money(line.sell)}</td>
         </tr>
       `).join("") + `
         <tr>
           <td><strong>Total Frame</strong></td>
           <td class="num"></td>
           <td class="num"></td>
-          <td class="num"><strong>${money(increasedPrice(result.framePrice))}</strong></td>
+          <td class="num"><strong>${money(quote.frame.sell)}</strong></td>
         </tr>
       `;
 
       const buttons = [
         { label: "Add Cube Frame To Cart", code: DATA.frameQcode, url: result.frameUrl },
-        ...result.inserts.map((item) => ({ label: `Add ${item.label}`, code: item.material.qcode, url: insertUrl(item), className: "secondary" })).filter((button) => button.url),
+        ...result.inserts.map((item) => ({ label: `Add ${item.label}`, code: item.material.qcode, url: insertUrl(item, graphicPricing.get(item.key)?.unitSell), className: "secondary" })).filter((button) => button.url),
         {
           label: "Add All, (Frame and Graphics) to Cart",
           code: "Bundle",
-          urls: [result.frameUrl, ...result.inserts.map(insertUrl).filter(Boolean)],
+          urls: [result.frameUrl, ...result.inserts.map((item) => insertUrl(item, graphicPricing.get(item.key)?.unitSell)).filter(Boolean)],
           className: "combo"
         }
       ];

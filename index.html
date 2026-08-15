@@ -2619,23 +2619,48 @@
       await downloadCutFile();
     }
 
-    function render() {
+    let pricingRequest = 0;
+    async function render() {
       syncFinishControls();
       syncPackingLengthDefault();
       const result = calculate();
       const { cfg } = result;
+      const request = ++pricingRequest;
+      let pricing;
+      try {
+        pricing = (await window.VivaluxPricing.quote("backlit", {
+          extrusion: cfg.extrusion.name, powerSupply: cfg.powerSupply.id,
+          panelIndex: DATA.panels.findIndex((panel) => panel.name === result.panel.name),
+          panelUnits: result.panelCount * result.panel.panelQty,
+          frameM: 2 * (cfg.width + cfg.height) / 1000,
+          ledQty: result.ledQty, powerSupplyQty: result.supplyQty,
+          powderCoating: cfg.powderCoating, wireSundriesQty: result.wireSundriesQty,
+          labourMinutes: result.labourHours * 60,
+          joinerQty: (Math.max(0, Math.ceil(cfg.width / cfg.packingLength.mm) - 1) + Math.max(0, Math.ceil(cfg.height / cfg.packingLength.mm) - 1)) * cfg.extrusion.joinersPerJoin * 2,
+          cornerQty: cfg.extrusion.name === "No Frame" ? 0 : 8,
+          hBraceM: (result.horizontalBraces * result.hBraceLength + result.verticalBraces * result.vBraceLength) / 1000,
+          hBraceJoiners: result.cuttingLines.find((line) => line.item === "H Brace Joiners")?.qty || 0,
+          tensionLockQty: (result.horizontalBraces + result.verticalBraces) * 2,
+          printAreaSqm: result.printArea,
+          cartonAreaSqm: 2 * ((result.packingLengthCm / 100) * (result.packingWidthCm / 100) + (result.packingLengthCm / 100) * (result.packingHeightCm / 100) + (result.packingWidthCm / 100) * (result.packingHeightCm / 100))
+        })).calculation;
+      } catch (error) {
+        if (request === pricingRequest) document.getElementById("totalCost").textContent = error.message || "Pricing unavailable";
+        return;
+      }
+      if (request !== pricingRequest) return;
       updatePowerSupplyOptions(result.powerWatts);
       storeSharedSize(false);
       const showOtherColour = cfg.powderCoating && cfg.colourChoice === "Other";
       document.getElementById("otherColourField").hidden = !showOtherColour;
       fields.otherColour.disabled = !showOtherColour;
-      document.getElementById("boxPrice").textContent = fmtMoney(increasedPrice(result.boxPrice));
-      document.getElementById("unitCost").textContent = fmtMoney(increasedPrice(result.skinPrice));
-      document.getElementById("totalCost").textContent = fmtMoney(increasedPrice(result.unitCost));
-      document.getElementById("skinPrice").textContent = fmtMoney(increasedPrice(result.skinPrice));
-      document.getElementById("skinRate").textContent = `${fmtMoney(increasedPrice(cfg.skinRate))} / sqm`;
+      document.getElementById("boxPrice").textContent = fmtMoney(pricing.frame.sell);
+      document.getElementById("unitCost").textContent = fmtMoney(pricing.skin.sell);
+      document.getElementById("totalCost").textContent = fmtMoney(pricing.total.sell);
+      document.getElementById("skinPrice").textContent = fmtMoney(pricing.skin.sell);
+      document.getElementById("skinRate").textContent = `${fmtMoney(result.printArea ? pricing.skin.sell / result.printArea : 0)} / sqm`;
       document.getElementById("cartonDimensions").textContent = `${result.packingLengthCm} x ${result.packingWidthCm} x ${result.packingHeightCm} cm`;
-      document.getElementById("cartonPrice").textContent = fmtMoney(Math.ceil(increasedPrice(result.cartonPrice)));
+      document.getElementById("cartonPrice").textContent = fmtMoney(pricing.carton.sell);
       document.getElementById("powerWatts").textContent = `${fmtNumber(result.powerWatts, 1)} W`;
       document.getElementById("ledSummary").textContent = `${result.ledAcross} across x ${result.ledDown} down, ${result.ledQty} LEDs total. Pitch ${fmtNumber(result.ledBarPitch, 2)} mm, offset ${fmtNumber(result.ledOffset, 2)} mm.`;
       document.getElementById("totalCostNote").textContent = "Ex GST.";
@@ -2663,19 +2688,19 @@
       drawLightMatrix(result);
 
       const tbody = document.getElementById("cuttingList");
-      tbody.innerHTML = result.cuttingLines.map((line) => `
+      tbody.innerHTML = pricing.components.filter((line) => line.quantity > 0).map((line) => `
         <tr>
-          <td>${line.item}</td>
-          <td class="num">${fmtNumber(line.qty, Number.isInteger(line.qty) ? 0 : 2)}</td>
-          <td class="num">${line.size}</td>
-          <td class="num">${fmtMoney(increasedPrice(line.cost), 2)}</td>
+          <td>${line.label}</td>
+          <td class="num">${fmtNumber(line.quantity, Number.isInteger(line.quantity) ? 0 : 2)}</td>
+          <td class="num"></td>
+          <td class="num">${fmtMoney(line.sell, 2)}</td>
         </tr>
       `).join("") + `
         <tr>
           <td><strong>Total Cost</strong></td>
           <td class="num"></td>
           <td class="num"></td>
-          <td class="num"><strong>${fmtMoney(increasedPrice(result.rawBuildCost), 2)}</strong></td>
+          <td class="num"><strong>${fmtMoney(pricing.components.reduce((sum, line) => sum + line.sell, 0), 2)}</strong></td>
         </tr>
       `;
 
@@ -2718,7 +2743,7 @@
         packingwidthcm: result.packingWidthCm,
         packingheightcm: result.packingHeightCm,
         weightkg: urlInt(result.weightKg),
-        price: urlInt(increasedPrice(result.boxPrice))
+        price: urlInt(pricing.frame.sell)
       });
       const skinUrl = cartUrl({
         qcode: cfg.skin.qcode,
@@ -2726,7 +2751,7 @@
         width: urlInt(cfg.width),
         height: urlInt(cfg.height),
         shortname: ` ${cfg.shortName}`,
-        price: urlInt(increasedPrice(result.skinPrice))
+        price: urlInt(pricing.skin.sell)
       });
       const cartonUrl = cartUrl({
         qcode: DATA.constants.cartonQcode,
@@ -2737,7 +2762,7 @@
         packinglengthcm: result.packingLengthCm,
         packingheightcm: result.packingHeightCm,
         weightkg: urlInt(Math.max(1, result.weightKg * 0.1)),
-        price: urlInt(increasedPrice(result.cartonPrice))
+        price: urlInt(pricing.carton.sell)
       });
       const panelLinks = panelCartLinks(result);
       const links = [

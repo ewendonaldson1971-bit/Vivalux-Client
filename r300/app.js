@@ -764,8 +764,32 @@ function renderDiagram(calc) {
   `;
 }
 
-function render() {
+let pricingRequest = 0;
+
+async function render() {
   const calc = calculate();
+  const request = ++pricingRequest;
+  let quote;
+  try {
+    quote = (await window.VivaluxPricing.quote("r300", {
+      innerFabric: calc.innerFabric.name, outerFabric: calc.outerFabric.name,
+      extrusionWeightKg: calc.Horizontal_Extrusion_Weight + calc.Vertical_Brace_Weight + calc.Square_End_Vertical_Weight,
+      cornerSections: calc.Corner_Sections, squareCornerBracketQty: calc.Square_Corner_Bracket_QTY,
+      tensionLockQty: calc.Tension_Lock_QTY, forexAreaSqm: (610 * calc.Infill_Height / 1000000) * calc.Infill_Qty,
+      joinerPairs: calc.Joiner_Pairs, includeRigging: calc.includeRigging, numberRiggingPoints: calc.Number_Rigging_Points,
+      innerAreaSqm: calc.Inner_Price_Each / calc.innerFabric.sqmRate, outerAreaSqm: calc.Outer_Price_Each / calc.outerFabric.sqmRate,
+      innerQuantity: calc.innerGraphicQty, outerQuantity: calc.outerGraphicQty
+    })).calculation;
+  } catch (error) {
+    if (request === pricingRequest) els.metrics.innerHTML = `<div class="metric"><span>Pricing</span><strong>${error.message || "Unavailable"}</strong></div>`;
+    return;
+  }
+  if (request !== pricingRequest) return;
+  const innerPricing = quote.graphics.find((item) => item.id === "inner");
+  const outerPricing = quote.graphics.find((item) => item.id === "outer");
+  [["frameUrl", quote.frame.sell], ["innerUrl", innerPricing.unitSell], ["outerUrl", outerPricing.unitSell]].forEach(([key, price]) => {
+    const url = new URL(calc[key]); url.searchParams.set("price", Math.ceil(price)); calc[key] = url.href;
+  });
   state.cart = calc;
 
   els.riggingLabel.textContent = `Include ${calc.Number_Rigging_Points} Rigging Points`;
@@ -778,9 +802,9 @@ function render() {
   renderDiagram(calc);
 
   els.metrics.innerHTML = [
-    ["Frame Price Ex GST", money(increasedPrice(calc.Total_Frame_Price))],
-    ["Graphics Price Ex GST", money(increasedPrice(calc.Outer_Price + calc.Inner_Price))],
-    ["Total Price Ex GST", money(increasedPrice(calc.totalUnitPrice))],
+    ["Frame Price Ex GST", money(quote.frame.sell)],
+    ["Graphics Price Ex GST", money(quote.graphicsTotal.sell)],
+    ["Total Price Ex GST", money(quote.total.sell)],
   ]
     .map(([label, value]) => `<div class="metric"><span>${label}</span><strong>${value}</strong></div>`)
     .join("");

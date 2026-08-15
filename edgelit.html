@@ -1155,14 +1155,14 @@
       return lines.filter(Boolean).join("\r\n");
     }
 
-    function buildUrls(cfg, calc, desc) {
+    function buildUrls(cfg, calc, desc, pricing) {
       const shortName = cfg.shortName;
       const skinUnitPrice = calc.skinQtyPerBox ? calc.skinPrice / calc.skinQtyPerBox : 0;
       const bounceUnitPrice = calc.bounceQtyPerBox ? calc.bouncePrice / calc.bounceQtyPerBox : 0;
-      const boxUrl = `https://vivad.com.au/shopping-cart?qcode=${DATA.boxQcode}&quantity=${cfg.quantity}&shortname=${encode(shortName)}&description=${encode(desc)}&packinglengthcm=${calc.packingLengthCm}&packingwidthcm=${calc.packingWidthCm}&packingheightcm=${calc.packingHeightCm}&weightkg=${calc.weightKg}&price=${Math.ceil(increasedPrice(calc.boxPrice))}`;
-      const skinUrl = `https://vivad.com.au/shopping-cart?qcode=${cfg.skin.qcode}&quantity=${calc.skinQtyTotal}&width=${Math.round(cfg.width)}&height=${Math.round(cfg.height)}&shortname=${encode(shortName)}&price=${Math.ceil(increasedPrice(skinUnitPrice))}`;
+      const boxUrl = `https://vivad.com.au/shopping-cart?qcode=${DATA.boxQcode}&quantity=${cfg.quantity}&shortname=${encode(shortName)}&description=${encode(desc)}&packinglengthcm=${calc.packingLengthCm}&packingwidthcm=${calc.packingWidthCm}&packingheightcm=${calc.packingHeightCm}&weightkg=${calc.weightKg}&price=${Math.ceil(pricing.frame.sell)}`;
+      const skinUrl = `https://vivad.com.au/shopping-cart?qcode=${cfg.skin.qcode}&quantity=${calc.skinQtyTotal}&width=${Math.round(cfg.width)}&height=${Math.round(cfg.height)}&shortname=${encode(shortName)}&price=${Math.ceil(pricing.skinUnit.sell)}`;
       const bounceUrl = calc.bounceQtyTotal
-        ? `https://vivad.com.au/shopping-cart?qcode=${DATA.bounceQcode}&quantity=${calc.bounceQtyTotal}&width=${Math.round(calc.bounceWidth)}&height=${Math.round(calc.bounceHeight)}&shortname=${encode(shortName)}&price=${Math.ceil(increasedPrice(bounceUnitPrice))}`
+        ? `https://vivad.com.au/shopping-cart?qcode=${DATA.bounceQcode}&quantity=${calc.bounceQtyTotal}&width=${Math.round(calc.bounceWidth)}&height=${Math.round(calc.bounceHeight)}&shortname=${encode(shortName)}&price=${Math.ceil(pricing.bounceUnit.sell)}`
         : "";
       return { boxUrl, skinUrl, bounceUrl };
     }
@@ -1262,7 +1262,8 @@
       `;
     }
 
-    function render() {
+    let pricingRequest = 0;
+    async function render() {
       const cfg = getConfig();
       if (!cfg.powder) $("colour").value = "Clear Anodised";
       $("colour").disabled = !cfg.powder;
@@ -1270,45 +1271,62 @@
       storeSharedSize(false);
 
       const calc = calculate(cfg);
+      const request = ++pricingRequest;
+      let pricing;
+      try {
+        pricing = (await window.VivaluxPricing.quote("edgelit", {
+          extrusion: cfg.extrusion.name, skin: cfg.skin.qcode, powerType: cfg.powerType,
+          perimeterM: calc.perimeter, joinerQty: calc.joinerQty,
+          hBraceM: calc.costComponents.filter((line) => line.item.includes("H-Brace")).reduce((sum, line) => sum + line.cost / DATA.hBraceCostPerM, 0),
+          tensionLockQty: calc.tensionLockQty, cornerQty: 8, ledCounts: calc.ledCounts, powerQty: calc.powerQty,
+          includeFeet: cfg.includeFeet, powder: cfg.powder,
+          labourHours: cfg.lighting.edges.length ? calc.perimeter * 0.2 : calc.area,
+          areaSqm: calc.area, skinQuantity: calc.skinQtyPerBox,
+          bounceAreaSqm: calc.bounceWidth * calc.bounceHeight / 1000000, bounceQuantity: calc.bounceQtyPerBox
+        })).calculation;
+      } catch (error) {
+        if (request === pricingRequest) $("totalCost").textContent = error.message || "Pricing unavailable";
+        return;
+      }
+      if (request !== pricingRequest) return;
       const desc = description(cfg, calc);
-      const urls = buildUrls(cfg, calc, desc);
+      const urls = buildUrls(cfg, calc, desc, pricing);
       [...$("powerSupplyType").options].forEach((option) => {
         const spec = DATA.power[option.value];
         const qty = calc.totalPower > 0 ? Math.ceil(calc.totalPower / spec.limit) : 0;
-        const cost = increasedPrice(qty * spec.cost);
-        option.textContent = `QTY: ${qty} ${spec.label} $${cost.toFixed(2)}`;
+        option.textContent = `QTY: ${qty} ${spec.label}`;
       });
       $("powerLeadQty").textContent = calc.powerLeadQty;
       $("powerDensity").textContent = `${calc.powerDensity.toFixed(1)} W/m2`;
       $("averageLuminance").textContent = `Average Luminance: ${Math.round(calc.averageLuminance)} Nits cd/m2`;
-      $("skinPrice").textContent = money(increasedPrice(calc.skinPrice));
-      $("bouncePrice").textContent = money(increasedPrice(calc.bouncePrice));
+      $("skinPrice").textContent = money(pricing.skin.sell);
+      $("bouncePrice").textContent = money(pricing.bounce.sell);
       $("skinQty").textContent = `${calc.skinQtyPerBox} per box (${calc.skinQtyTotal} total)`;
       $("bounceQty").textContent = `${calc.bounceQtyPerBox} per box (${calc.bounceQtyTotal} total)`;
-      $("boxPrice").textContent = money(increasedPrice(calc.boxPrice));
-      $("unitCost").textContent = money(increasedPrice(calc.skinPrice + calc.bouncePrice));
+      $("boxPrice").textContent = money(pricing.frame.sell);
+      $("unitCost").textContent = money(pricing.skin.sell + pricing.bounce.sell);
       $("unitCostNote").textContent = calc.bounceQtyPerBox
         ? "1 skin + 1 bounce cloth per box."
         : "2 skins per box. No bounce cloth.";
-      $("totalCost").textContent = money(increasedPrice(calc.unitCost));
+      $("totalCost").textContent = money(pricing.total.sell);
       $("totalNote").textContent = `${cfg.quantity} unit${cfg.quantity === 1 ? "" : "s"} including GST.`;
       $("powerWatts").textContent = `${calc.totalPower.toFixed(1)} W`;
       $("ledSummary").textContent = ledDescription(calc);
       $("description").value = desc;
       $("selectedUrl").value = urls.boxUrl;
-      $("costComponents").innerHTML = calc.costComponents.map((line) => `
+      $("costComponents").innerHTML = pricing.components.filter((line) => line.quantity > 0).map((line) => `
         <tr>
-          <td>${line.item}</td>
-          <td class="num">${qty(line.qty)}</td>
-          <td class="num">${line.size}</td>
-          <td class="num">${money2(increasedPrice(line.cost))}</td>
+          <td>${line.label}</td>
+          <td class="num">${qty(line.quantity)}</td>
+          <td class="num"></td>
+          <td class="num">${money2(line.sell)}</td>
         </tr>
       `).join("") + `
         <tr>
           <td><strong>Total Cost</strong></td>
           <td class="num"></td>
           <td class="num"></td>
-          <td class="num"><strong>${money2(increasedPrice(calc.rawCost))}</strong></td>
+          <td class="num"><strong>${money2(pricing.components.reduce((sum, line) => sum + line.sell, 0))}</strong></td>
         </tr>
       `;
       renderDiagram(cfg, calc);
