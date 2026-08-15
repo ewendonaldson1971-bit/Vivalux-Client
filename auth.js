@@ -47,12 +47,10 @@
   }
 
   function safeClearPricingToken() {
-    var user = getCurrentUser();
-    if (!user || !user.username) return;
-    var sharedUser = Object.assign({}, user);
-    delete sharedUser.pricingToken;
-    window.__vivaluxCurrentUser = sharedUser;
-    safeWriteSession(sharedUser);
+    window.__vivaluxCurrentUser = null;
+    safeClearSession();
+    renderUserBar();
+    showLogin("Your Pricing Engine session expired. Please sign in again.");
     refreshPricing();
   }
 
@@ -272,8 +270,6 @@
         authenticatedUser.pricingToken = pricing.token;
         authenticatedUser.pricingApiBase = pricing.apiBase;
         return authenticatedUser;
-      }).catch(function () {
-        return authenticatedUser;
       });
     });
   }
@@ -284,11 +280,24 @@
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ username: username, password: password })
       }).then(function (response) {
-        if (!response.ok) throw new Error("Pricing token unavailable.");
+        if (!response.ok) {
+          var error = new Error("Pricing Engine connection failed.");
+          error.code = "pricingUnavailable";
+          throw error;
+        }
         return response.json();
       }).then(function (pricing) {
-        if (!pricing || !pricing.token) throw new Error("Pricing token unavailable.");
+        if (!pricing || !pricing.token) {
+          var error = new Error("Pricing Engine connection failed.");
+          error.code = "pricingUnavailable";
+          throw error;
+        }
         return { token: pricing.token, apiBase: PRICING_API_BASE };
+      }).catch(function (error) {
+        if (error && error.code === "pricingUnavailable") throw error;
+        var connectionError = new Error("Pricing Engine connection failed.");
+        connectionError.code = "pricingUnavailable";
+        throw connectionError;
       });
   }
 
@@ -440,7 +449,7 @@
     }, true);
   }
 
-  function showLogin() {
+  function showLogin(initialMessage) {
     document.documentElement.classList.remove("vivalux-auth-pending");
     document.documentElement.classList.add("vivalux-auth-locked");
     if (document.getElementById("vivaluxAuthOverlay")) return;
@@ -489,6 +498,7 @@
     var accessForm = overlay.querySelector(".vivalux-access-panel");
     var accessMessage = accessForm.querySelector(".vivalux-auth-message");
     var accessSubmitButton = accessForm.querySelector('button[type="submit"]');
+    message.textContent = initialMessage || "";
 
     function openAccessDialog() {
       accessForm.reset();
@@ -515,7 +525,9 @@
       }).catch(function (error) {
         message.textContent = error && error.code === "invalidCredentials"
           ? "User name or password is incorrect."
-          : "Could not check login.";
+          : error && error.code === "pricingUnavailable"
+            ? "Could not connect to the Pricing Engine. Please try again."
+            : "Could not check login.";
         button.disabled = false;
         form.elements.password.select();
       });
@@ -577,12 +589,13 @@
       user = null;
     }
 
-    if (user && user.username) {
+    if (user && user.username && user.pricingToken) {
       unlock(user);
       return;
     }
 
     window.__vivaluxCurrentUser = null;
+    safeClearSession();
     renderUserBar();
     showLogin();
     refreshPricing();
@@ -591,9 +604,10 @@
   document.addEventListener("DOMContentLoaded", function () {
     bindCartNotifications();
     var user = getCurrentUser();
-    if (user) {
+    if (user && user.pricingToken) {
       unlock(user);
     } else {
+      if (user) safeClearSession();
       showLogin();
     }
   });
