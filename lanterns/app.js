@@ -21,7 +21,7 @@ const DATA = {
 };
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PT_PER_MM = 2.834645669;
-const els = Object.fromEntries(["shortname", "diameter", "height", "maxPacking", "packingHint", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText", "takeoff"].map((id) => [id, document.getElementById(id)]));
+const els = Object.fromEntries(["shortname", "diameter", "height", "maxPacking", "packingHint", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText"].map((id) => [id, document.getElementById(id)]));
 let pricingRequest = 0;
 let currentCalc = null;
 
@@ -170,7 +170,6 @@ function renderDiagram(calc) {
 }
 
 function renderTakeoff(quote) {
-  els.takeoff.innerHTML = quote.components.map((item) => `<div class="takeoff-row"><span>${item.label}<br><small>${Number(item.quantity).toFixed(item.quantity % 1 ? 2 : 0)} × ${money(item.unitCost)}</small></span><strong>${money(item.sell)}</strong></div>`).join("");
 }
 
 function renderButtons(cart) {

@@ -1,11 +1,6 @@
 .app-tabs { grid-template-columns: repeat(7, minmax(0, 1fr)); }
 .rigging-control { grid-template-columns: 52px minmax(0, 1fr); }
 .lantern-photo { max-height: 420px; object-fit: contain; }
-.takeoff-panel #takeoff { display: grid; gap: 8px; }
-.takeoff-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
-.takeoff-row:last-child { border-bottom: 0; }
-.takeoff-row span { color: var(--muted); }
-.takeoff-row strong { color: var(--ink); text-align: right; }
 .cylinder-shell { fill: rgba(52, 139, 226, 0.08); stroke: #53565a; stroke-width: 3; }
 .cylinder-ring { fill: none; stroke: #53565a; stroke-width: 8; }
 .cylinder-back { stroke-dasharray: 10 9; opacity: 0.45; }
