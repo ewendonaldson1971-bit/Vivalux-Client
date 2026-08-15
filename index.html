@@ -782,6 +782,13 @@
                 <option value="disassembled">Send Disassembled</option>
               </select>
             </div>
+            <div class="field full">
+              <label for="includeRigging">Rigging Points</label>
+              <label class="toggle">
+                <input id="includeRigging" name="includeRigging" type="checkbox">
+                <span id="riggingLabel">Include Rigging Points</span>
+              </label>
+            </div>
           </div>
         </section>
 
@@ -1132,7 +1139,10 @@
         skinSqmPrice: 65,
         cartonSqmPrice: 10,
         cartonGsm: 300,
-        packingFactor: 0.5
+        packingFactor: 0.5,
+        riggingPointCost: 12,
+        riggingPointWeightKg: 0.07,
+        riggingPointDist: 2000
       }
     };
 
@@ -1581,6 +1591,7 @@
         height: Math.max(100, numberValue("height")),
         packingLength: selectedPackingLength(),
         packingMethod: fields.packingMethod.value === "disassembled" ? "disassembled" : "assembled",
+        includeRigging: fields.includeRigging.checked,
         powerSupply: DATA.powerSupplies.find((item) => item.id === fields.powerSupply.value) || DATA.powerSupplies[0],
         exitLeadFrom: fields.exitLeadFrom.value || "TBA",
         leadLocation: fields.leadLocation.value || "TBA",
@@ -1776,6 +1787,8 @@
       const extrusionTopBottomM = (cfg.width * 2) / 1000;
       const extrusionSideM = (cfg.height * 2) / 1000;
       const frameM = extrusionTopBottomM + extrusionSideM;
+      const numberRiggingPoints = cfg.includeRigging ? Math.max(2, Math.ceil(cfg.width / c.riggingPointDist)) : 0;
+      const riggingCost = numberRiggingPoints * c.riggingPointCost;
       const aluminiumWeight = frameM * cfg.extrusion.weightPerM;
       const frameCost = frameM * cfg.extrusion.unitCostPerM;
       const joinerQty = (frameJoinsWidth + frameJoinsHeight) * cfg.extrusion.joinersPerJoin * 2;
@@ -1819,7 +1832,8 @@
         cornersQty * c.cornerCost +
         hBraceM * c.hBraceCostPerM +
         hBraceJoiners * c.hBraceJoinerCost +
-        tensionLockCost;
+        tensionLockCost +
+        riggingCost;
       const boxPrice = rawBuildCost * cfg.margin;
       const separatedPanelMaxMm = Math.max(panelLayout.cutWidth, panelLayout.cutHeight);
       const separatedPanelMinMm = Math.min(panelLayout.cutWidth, panelLayout.cutHeight);
@@ -1844,7 +1858,8 @@
         joinerQty * c.joinerKg +
         cornersQty * c.cornerKg +
         tensionLockQty * c.tensionLockKg +
-        ledQty * c.ledKg
+        ledQty * c.ledKg +
+        numberRiggingPoints * c.riggingPointWeightKg
       );
       const weightKg = Math.round(physicalWeightKg);
       const unitCost = boxPrice + skinPrice + cartonPrice;
@@ -1858,6 +1873,7 @@
         `Packing: ${cfg.packingMethod === "disassembled" ? "Send Disassembled" : "Send Assembled"}`,
         `Packing Dimensions: ${packingLengthCm}cm x ${packingWidthCm}cm x ${packingHeightCm}cm, Weight ${urlInt(weightKg)}kg`,
         finishDescription,
+        numberRiggingPoints ? `Includes ${numberRiggingPoints} rigging points.` : "",
         `QTY: ${ledQty} LEDs in bars running ${orientation}`,
         `QTY: ${supplyQty} ${cfg.powerSupply.productName}`,
         `QTY: ${powerLeadQty} Power Lead${powerLeadQty === 1 ? "" : "s"} - Exit from ${cfg.exitLeadFrom}, Location ${cfg.leadLocation}`,
@@ -1901,6 +1917,8 @@
         powerDensity,
         averageLuminance,
         supplyQty,
+        numberRiggingPoints,
+        riggingCost,
         powerLeadQty,
         panel,
         ledBarPitch,
@@ -1935,6 +1953,7 @@
           { item: "LED 0.5 Watt 12V", qty: ledQty, size: `${fmtNumber(powerWatts, 1)} W`, cost: ledCost },
           { item: cfg.powerSupply.productName, qty: supplyQty, size: cfg.powerSupply.mode, cost: chosenPowerCost },
           { item: "Power Leads", qty: powerLeadQty, size: `${cfg.exitLeadFrom}, ${cfg.leadLocation}`, cost: 0 },
+          { item: "Rigging points", qty: numberRiggingPoints, size: "included in frame", cost: riggingCost },
           { item: "Hours", qty: labourHours, size: `${fmtNumber(c.labourRate, 0)} / hr`, cost: labourCost },
           { item: "Wire and Sunderies", qty: wireSundriesQty, size: `${fmtNumber(c.wireSundriesUnitCost, 0)} each`, cost: wireCost },
           { item: `${cfg.colour} Powder Coating of frame`, qty: cfg.powderCoating ? 1 : 0, size: cfg.colour, cost: powderCost }
@@ -2635,7 +2654,8 @@
           panelUnits: result.panelCount * result.panel.panelQty,
           frameM: 2 * (cfg.width + cfg.height) / 1000,
           ledQty: result.ledQty, powerSupplyQty: result.supplyQty,
-          powderCoating: cfg.powderCoating, wireSundriesQty: result.wireSundriesQty,
+          powderCoating: cfg.powderCoating, includeRigging: cfg.includeRigging, numberRiggingPoints: result.numberRiggingPoints,
+          wireSundriesQty: result.wireSundriesQty,
           labourMinutes: result.labourHours * 60,
           joinerQty: (Math.max(0, Math.ceil(cfg.width / cfg.packingLength.mm) - 1) + Math.max(0, Math.ceil(cfg.height / cfg.packingLength.mm) - 1)) * cfg.extrusion.joinersPerJoin * 2,
           cornerQty: cfg.extrusion.name === "No Frame" ? 0 : 8,
@@ -2656,6 +2676,8 @@
       document.getElementById("otherColourField").hidden = !showOtherColour;
       fields.otherColour.disabled = !showOtherColour;
       document.getElementById("boxPrice").textContent = fmtMoney(pricing.frame.sell);
+      const riggingPricing = pricing.components.find((item) => item.id === "rigging");
+      document.getElementById("riggingLabel").textContent = `Include ${Math.max(2, Math.ceil(cfg.width / DATA.constants.riggingPointDist))} Rigging Points (+${fmtMoney(riggingPricing?.sell || 0)} Ex GST)`;
       document.getElementById("unitCost").textContent = fmtMoney(pricing.skin.sell);
       document.getElementById("totalCost").textContent = fmtMoney(pricing.total.sell);
       document.getElementById("skinPrice").textContent = fmtMoney(pricing.skin.sell);

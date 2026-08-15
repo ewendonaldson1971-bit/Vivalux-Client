@@ -2,7 +2,7 @@
   "use strict";
 
   var API_BASE = "https://vivadpricing-app.calmtree-53cc02bb.australiasoutheast.azurecontainerapps.io";
-  var CONFIG_CACHE_KEY = "vivalux-pricing-config-cache-v2";
+  var CONFIG_CACHE_KEY = "vivalux-pricing-config-cache-v3";
   var QUOTE_CACHE_KEY = "vivalux-pricing-quote-cache-v1";
   var CONFIG_CACHE_TTL = 5 * 60 * 1000;
   var QUOTE_CACHE_TTL = 60 * 1000;

@@ -566,6 +566,13 @@
                 Enabled
               </label>
             </div>
+            <div class="field full">
+              <label for="includeRigging">Rigging Points</label>
+              <label class="toggle">
+                <input id="includeRigging" name="includeRigging" type="checkbox">
+                <span id="riggingLabel">Include Rigging Points</span>
+              </label>
+            </div>
           </div>
         </section>
 
@@ -748,6 +755,9 @@
       luminanceLumensPerWatt: 101,
       luminanceDivisor: 3.142,
       luminanceEfficiencyByDepth: { 50: 0.34, 80: 0.27, 100: 0.235 },
+      riggingPointCost: 12,
+      riggingPointWeightKg: 0.07,
+      riggingPointDist: 2000,
       skins: [
         { name: "Fortuna DyeSub", qcode: "Q54823-03", rate: 65 },
         { name: "Polarlight UV", qcode: "Q54823-09", rate: 65 },
@@ -896,6 +906,7 @@
         sides: $("sides").value,
         lighting: DATA.lightingOptions.find((item) => item.label === $("lighting").value),
         includeFeet: $("includeFeet").checked,
+        includeRigging: $("includeRigging").checked,
         powder,
         colour,
         powerType: $("powerSupplyType").value,
@@ -1025,9 +1036,11 @@
       const cornerWeight = 8 * 40;
       const feetCost = cfg.includeFeet ? 64.62 : 0;
       const powderCost = cfg.powder ? perimeter * 10 : 0;
+      const numberRiggingPoints = cfg.includeRigging ? Math.max(2, Math.ceil(cfg.width / DATA.riggingPointDist)) : 0;
+      const riggingCost = numberRiggingPoints * DATA.riggingPointCost;
       const labourCost = cfg.lighting.edges.length ? perimeter * 0.2 * 45 : area * 45;
       const wireCost = perimeter * 5;
-      const rawCost = topBottomCost + sideCost + joinerCost + cornerCost + hBraceCost + tensionLockCost + ledCost + powerCost + feetCost + powderCost + labourCost + wireCost;
+      const rawCost = topBottomCost + sideCost + joinerCost + cornerCost + hBraceCost + tensionLockCost + ledCost + powerCost + feetCost + powderCost + riggingCost + labourCost + wireCost;
       const margin = Number.isFinite(cfg.margin) ? cfg.margin : DATA.margin;
       const boxPrice = Math.ceil(rawCost * margin);
 
@@ -1043,7 +1056,7 @@
       const unitCost = boxPrice + skinPrice + bouncePrice;
       const totalInc = unitCost * cfg.quantity * 1.1;
 
-      const physicalWeightKg = Math.round((topBottomWeight + sideWeight + joinerWeight + hBraceWeight + tensionLockWeight + cornerWeight + ledWeight + powerWeight) / 1000);
+      const physicalWeightKg = Math.round((topBottomWeight + sideWeight + joinerWeight + hBraceWeight + tensionLockWeight + cornerWeight + ledWeight + powerWeight) / 1000 + numberRiggingPoints * DATA.riggingPointWeightKg);
       const packLengthCm = Math.ceil(Math.max(topBottomSplit.sectionLength, sideSplit.sectionLength) / 10);
       const packAreaVolume = ((topBottomWeight + sideWeight) * cfg.extrusion.xArea / Math.max(cfg.extrusion.weightPerM, 1)) || 0.02;
       const packCrossCm = Math.max(12, Math.round(Math.sqrt(packAreaVolume * 1.2 / Math.max(packLengthCm / 100, 1)) * 100));
@@ -1080,6 +1093,8 @@
         packingWidthCm: packCrossCm,
         packingHeightCm: packCrossCm,
         powerLeadQty,
+        numberRiggingPoints,
+        riggingCost,
         powerDensity,
         topBottomQty,
         sideQty,
@@ -1107,6 +1122,7 @@
           ...moduleLines,
           { item: powerSpec.label, qty: powerQty, size: cfg.powerType.toLowerCase(), cost: powerCost },
           { item: "Power Leads", qty: powerLeadQty, size: `${cfg.exitLeadFrom || "TBA"}, ${cfg.leadLocation || "TBA"}`, cost: 0 },
+          { item: "Rigging points", qty: numberRiggingPoints, size: "included in frame", cost: riggingCost },
           { item: "Hours", qty: cfg.lighting.edges.length ? perimeter * 0.2 : area, size: "$45 / hr", cost: labourCost },
           { item: "Wire and Sunderies", qty: perimeter, size: "$5 each", cost: wireCost },
           { item: `${cfg.colour} Powder Coating of frame`, qty: cfg.powder ? 1 : 0, size: cfg.colour, cost: powderCost },
@@ -1150,6 +1166,7 @@
         cfg.extrusion.name,
         cfg.lighting.label.replace(/^\d+\s*/, ""),
         `Illuminated edges: ${litEdgesDescription(cfg)}`,
+        calc.numberRiggingPoints ? `Includes ${calc.numberRiggingPoints} rigging points.` : "",
         `LEDs: ${ledDescription(calc)}`,
         `Total Power: ${calc.totalPower.toFixed(1)} Watts`,
         `QTY ${calc.powerQty} QTY:${calc.powerQty} off ${calc.powerSpec.label}`,
@@ -1291,6 +1308,7 @@
           hBraceM: calc.costComponents.filter((line) => line.item.includes("H-Brace")).reduce((sum, line) => sum + line.cost / DATA.hBraceCostPerM, 0),
           tensionLockQty: calc.tensionLockQty, cornerQty: 8, ledCounts: calc.ledCounts, powerQty: calc.powerQty,
           includeFeet: cfg.includeFeet, powder: cfg.powder,
+          includeRigging: cfg.includeRigging, numberRiggingPoints: calc.numberRiggingPoints,
           labourHours: cfg.lighting.edges.length ? calc.perimeter * 0.2 : calc.area,
           areaSqm: calc.area, skinQuantity: calc.skinQtyPerBox,
           bounceAreaSqm: calc.bounceWidth * calc.bounceHeight / 1000000, bounceQuantity: calc.bounceQtyPerBox
@@ -1315,6 +1333,8 @@
       $("skinQty").textContent = `${calc.skinQtyPerBox} per box (${calc.skinQtyTotal} total)`;
       $("bounceQty").textContent = `${calc.bounceQtyPerBox} per box (${calc.bounceQtyTotal} total)`;
       $("boxPrice").textContent = money(pricing.frame.sell);
+      const riggingPricing = pricing.components.find((item) => item.id === "rigging");
+      $("riggingLabel").textContent = `Include ${Math.max(2, Math.ceil(cfg.width / DATA.riggingPointDist))} Rigging Points (+${money(riggingPricing?.sell || 0)} Ex GST)`;
       $("unitCost").textContent = money(pricing.skin.sell + pricing.bounce.sell);
       $("unitCostNote").textContent = calc.bounceQtyPerBox
         ? "1 skin + 1 bounce cloth per box."
