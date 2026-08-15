@@ -21,7 +21,7 @@ const DATA = {
 };
 const CART_BASE = "https://vivad.com.au/shopping-cart";
 const PT_PER_MM = 2.834645669;
-const els = Object.fromEntries(["shortname", "diameter", "height", "maxPacking", "packingHint", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText"].map((id) => [id, document.getElementById(id)]));
+const els = Object.fromEntries(["shortname", "diameter", "height", "quantity", "maxPacking", "packingHint", "riggingPoints", "riggingHint", "riggingLabel", "outerFabric", "outerQuantity", "innerFabric", "innerQuantity", "metrics", "diagram", "graphicSummary", "cartButtons", "selectedUrl", "descriptionText"].map((id) => [id, document.getElementById(id)]));
 let pricingRequest = 0;
 let currentCalc = null;
 
@@ -48,6 +48,7 @@ function readInputs() {
   return {
     diameterMm,
     heightMm,
+    quantity: Math.max(1, Math.round(Number(els.quantity.value) || 1)),
     maxPackingLength,
     riggingPointQty: Math.max(0, Math.round(Number(els.riggingPoints.value) || 0)),
     outerFabric: fabricByName(els.outerFabric.value),
@@ -84,7 +85,7 @@ function geometry(input) {
 }
 
 function description(calc, quote) {
-  const base = `Quantity: 1 Cylindrical Hanging Lantern. Outer Diameter: ${calc.diameterMm}mm Height: ${calc.heightMm}mm.\nIncludes ${calc.riggingPointQty} Rigging Points and ${calc.miniBraceQty} minibraces.\nSupplied in ${calc.suppliedSections} Sections.`;
+  const base = `Quantity: ${calc.quantity} Cylindrical Hanging Lantern${calc.quantity === 1 ? "" : "s"}. Outer Diameter: ${calc.diameterMm}mm Height: ${calc.heightMm}mm.\nIncludes ${calc.riggingPointQty} Rigging Points and ${calc.miniBraceQty} minibraces per Lantern.\nEach Lantern is supplied in ${calc.suppliedSections} Sections.`;
   if (!quote) return base;
   return `${base}\nPacking Dimensions: ${quote.packingLengthCm}cm (l) x ${quote.packingWidthCm}cm (w) x ${quote.packingHeightCm}cm (h).\nTotal Weight Frame and Graphics: ${Math.ceil(quote.totalWeightKg)}Kg`;
 }
@@ -96,7 +97,7 @@ function cartUrl(params) {
 function frameCartParams(calc, quote, descriptionText) {
   return {
     qcode: quote.frameQcode || DATA.frameQcode,
-    quantity: 1,
+    quantity: calc.quantity,
     shortname: calc.shortname,
     description: descriptionText,
     packinglengthcm: quote.packingLengthCm,
@@ -274,6 +275,13 @@ function enforceLimits() {
   render();
 }
 
+function enforceQuantity() {
+  const quantity = Number(els.quantity.value);
+  if (!Number.isFinite(quantity) || quantity < 1) els.quantity.value = "1";
+  else els.quantity.value = String(Math.round(quantity));
+  render();
+}
+
 function renderFabricOptions() {
   const options = DATA.fabrics.map((fabric) => `<option value="${fabric.name}">${fabric.name} — ${money(fabric.sqmRate)}/m²</option>`).join("");
   const outer = els.outerFabric.value || DATA.fabrics[0].name;
@@ -288,9 +296,10 @@ function renderPackingOptions() {
   els.maxPacking.value = DATA.packingLengths.some((item) => item.name === selected) ? selected : DATA.packingLengths[0]?.name || "";
 }
 
-[els.shortname, els.diameter, els.height, els.riggingPoints, els.outerFabric, els.outerQuantity, els.innerFabric, els.innerQuantity].forEach((input) => input.addEventListener("input", render));
+[els.shortname, els.diameter, els.height, els.quantity, els.riggingPoints, els.outerFabric, els.outerQuantity, els.innerFabric, els.innerQuantity].forEach((input) => input.addEventListener("input", render));
 [els.maxPacking].forEach((input) => input.addEventListener("change", render));
 [els.diameter, els.height].forEach((input) => input.addEventListener("blur", enforceLimits));
+els.quantity.addEventListener("blur", enforceQuantity);
 document.addEventListener("click", (event) => {
   const templateButton = event.target.closest("[data-template]");
   if (templateButton) { downloadTemplate(templateButton.dataset.template); return; }

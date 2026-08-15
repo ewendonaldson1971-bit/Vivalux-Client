@@ -16,7 +16,7 @@ function frameCartParams(calc, quote, descriptionText) {
 
 test("forms Lantern frame orders with the Halo shopping-cart contract", () => {
   const params = frameCartParams(
-    { shortname: "Hanging Lantern" },
+    { shortname: "Hanging Lantern", quantity: 3 },
     {
       frameQcode: "Q203210-09",
       packingLengthCm: 500,
@@ -25,7 +25,7 @@ test("forms Lantern frame orders with the Halo shopping-cart contract", () => {
       totalWeightKg: 16.72,
       frame: { sell: 1234.25 },
     },
-    "Quantity: 1 Cylindrical Hanging Lantern.",
+    "Quantity: 3 Cylindrical Hanging Lanterns.",
   );
 
   assert.deepEqual(Object.keys(params), [
@@ -33,7 +33,7 @@ test("forms Lantern frame orders with the Halo shopping-cart contract", () => {
     "packingwidthcm", "packingheightcm", "weightkg", "price",
   ]);
   assert.equal(params.qcode, "Q203210-09");
-  assert.equal(params.quantity, 1);
+  assert.equal(params.quantity, 3);
   assert.equal(params.packinglengthcm, 500);
   assert.equal(params.packingwidthcm, 57);
   assert.equal(params.packingheightcm, 30);
