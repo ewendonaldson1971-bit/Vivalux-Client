@@ -5,10 +5,7 @@
   var AUTH_CHANGE_EVENT = "vivalux-auth-change";
   // Deployed Google Apps Script Web App URL for login, emails and cart notifications.
   var LOGIN_NOTIFICATION_URL = "https://script.google.com/macros/s/AKfycbzf1aPV_TjMYsUcGry51I9bErT9JL_waBIUDtvJPlePr6BOwg8gcYqEGy7f5wNuRtO6/exec";
-  var PRICING_API_BASES = [
-    "https://vivadpricing-app.calmtree-53cc02bb.australiasoutheast.azurecontainerapps.io",
-    "https://vivad-pricing-configurator.vivad-gpt-0611.chatgpt.site"
-  ];
+  var PRICING_API_BASE = "https://vivadpricing-app.calmtree-53cc02bb.australiasoutheast.azurecontainerapps.io";
   var currentScript = document.currentScript;
   var rootUrl = currentScript ? new URL("./", currentScript.src) : new URL("./", window.location.href);
 
@@ -271,7 +268,7 @@
         discountPercentage: parseDiscount(result.user.discountPercentage),
         signedInAt: new Date().toISOString()
       };
-      return requestPricingToken(username, password, 0).then(function (pricing) {
+      return requestPricingToken(username, password).then(function (pricing) {
         authenticatedUser.pricingToken = pricing.token;
         authenticatedUser.pricingApiBase = pricing.apiBase;
         return authenticatedUser;
@@ -281,10 +278,8 @@
     });
   }
 
-  function requestPricingToken(username, password, index) {
-    var apiBase = PRICING_API_BASES[index];
-    if (!apiBase) return Promise.reject(new Error("Pricing token unavailable."));
-    return fetch(apiBase + "/api/auth/token", {
+  function requestPricingToken(username, password) {
+    return fetch(PRICING_API_BASE + "/api/auth/token", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({ username: username, password: password })
@@ -293,10 +288,7 @@
         return response.json();
       }).then(function (pricing) {
         if (!pricing || !pricing.token) throw new Error("Pricing token unavailable.");
-        return { token: pricing.token, apiBase: apiBase };
-      }).catch(function (error) {
-        if (index + 1 < PRICING_API_BASES.length) return requestPricingToken(username, password, index + 1);
-        throw error;
+        return { token: pricing.token, apiBase: PRICING_API_BASE };
       });
   }
 
