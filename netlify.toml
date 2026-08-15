@@ -1,5 +1,5 @@
 [build]
-  command = "mkdir -p .next && cp index.html edgelit.html palisade.html cube.html auth.css auth.js brand.css pricing-config.js vivad-logo.png cube-product.jpg palisade-100mm.jpg palisade-60mm.jpg .next/ && cp -R r300 .next/"
+  command = "mkdir -p .next && cp index.html edgelit.html palisade.html cube.html auth.css auth.js brand.css pricing-config.js vivad-logo.png cube-product.jpg palisade-100mm.jpg palisade-60mm.jpg .next/ && cp -R r300 lanterns .next/"
   publish = ".next"
 
 [build.environment]

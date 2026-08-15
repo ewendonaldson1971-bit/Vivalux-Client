@@ -13,12 +13,13 @@ Open `index.html` in a browser.
 - Palisade builder (`palisade.html`)
 - Cube builder (`cube.html`)
 - R300 builder (`r300/`)
+- Lanterns builder (`lanterns/`)
 - Shared Vivad branding and product imagery
 
 ## Pricing configuration boundary
 
 The five builder pages remain the frontend for product inputs, diagrams and cart presentation.
-Backlit, Edgelit, R300, Palisade and Cube pricing configuration is loaded from the Pricing
+Backlit, Edgelit, R300, Palisade, Cube and Lanterns pricing configuration is loaded from the Pricing
 Configurator API through `pricing-config.js`.
 
 On sign-in, `auth.js` exchanges the same Vivalux Apps Script credentials for a short-lived

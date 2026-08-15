@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vivtrack 4 Builder — Lanterns</title>
+    <link rel="stylesheet" href="../r300/styles.css?v=lanterns-20260815" />
+    <link rel="stylesheet" href="./styles.css?v=lanterns-20260815" />
+    <link rel="stylesheet" href="../brand.css?v=vivad-cart-blue-20260725" />
+    <link rel="stylesheet" href="../auth.css?v=vivad-style-20260725" />
+    <script src="../auth.js"></script>
+    <script src="../pricing-config.js"></script>
+  </head>
+  <body>
+    <nav class="app-tabs" aria-label="Application pages">
+      <a href="../index.html">Backlit</a>
+      <a href="../edgelit.html">Edgelit</a>
+      <a href="../r300/index.html">R300</a>
+      <a href="../palisade.html">Palisade</a>
+      <a href="../cube.html">Cube</a>
+      <a class="active" href="index.html">Lanterns</a>
+      <a href="https://vivad.com.au/shopping-cart">Go to Cart</a>
+    </nav>
+
+    <div class="app">
+      <aside class="sidebar">
+        <img class="brand-logo" src="./assets/vivad-logo-user.png" alt="Vivad" />
+        <div class="mast"><h1>Vivtrack 4 Builder</h1><div class="status">Live</div></div>
+
+        <section class="section">
+          <h2 class="section-title">Lantern Inputs</h2>
+          <div class="grid">
+            <label class="field full"><span>Shortname</span><input id="shortname" type="text" autocomplete="off" value="Hanging Lantern" /></label>
+            <label class="field"><span>Diameter mm</span><input id="diameter" type="number" min="1500" step="1" value="2000" inputmode="numeric" /></label>
+            <label class="field"><span>Height mm</span><input id="height" type="number" min="78" max="3000" step="1" value="1000" inputmode="numeric" /></label>
+            <label class="field full"><span>Rigging Points</span><input id="riggingPoints" type="number" min="0" step="1" value="4" inputmode="numeric" /><small id="riggingHint">Suggested: one rigging point for every mini brace.</small></label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2 class="section-title">Graphics</h2>
+          <div class="grid">
+            <label class="field full"><span>Outer Graphic insert</span><select id="outerFabric"></select></label>
+            <label class="field"><span>Outer QTY</span><input id="outerQuantity" type="number" min="0" step="1" value="1" inputmode="numeric" /></label>
+            <div class="field full"><button class="button secondary" type="button" data-template="outer">Download Outer Template</button></div>
+            <label class="field full"><span>Inner Graphic insert</span><select id="innerFabric"></select></label>
+            <label class="field"><span>Inner QTY</span><input id="innerQuantity" type="number" min="0" step="1" value="1" inputmode="numeric" /></label>
+            <div class="field full"><button class="button secondary" type="button" data-template="inner">Download Inner Template</button></div>
+            <label class="check-field full rigging-control">
+              <img src="./assets/rigging-point.png" alt="" />
+              <span id="riggingLabel">4 Rigging Points</span>
+            </label>
+          </div>
+        </section>
+      </aside>
+
+      <main class="main">
+        <section class="summary-grid" aria-label="Calculated prices" id="metrics"></section>
+        <section class="workspace">
+          <div class="left-stack">
+            <section class="panel">
+              <h2>Layout</h2>
+              <div class="diagram-wrap" id="diagram"></div>
+              <img class="hero-image secondary-image lantern-photo" src="./assets/cylinder.png" alt="Cylindrical hanging lantern" />
+              <p class="insert-summary" id="graphicSummary"></p>
+            </section>
+          </div>
+          <div class="right-stack">
+            <section class="actions-panel">
+              <h2>Cart Links</h2>
+              <div class="button-grid" id="cartButtons"></div>
+              <textarea class="url-box" id="selectedUrl" readonly></textarea>
+            </section>
+            <section class="panel">
+              <h2>Description</h2>
+              <textarea class="description-box" id="descriptionText" readonly></textarea>
+            </section>
+            <section class="panel takeoff-panel">
+              <h2>Frame Take-off</h2>
+              <div id="takeoff"></div>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="./app.js?v=lanterns-20260815" defer></script>
+  </body>
+</html>
