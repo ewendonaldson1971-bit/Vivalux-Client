@@ -23,4 +23,9 @@ test("shares only sessions with a valid pricing token", async () => {
   assert.doesNotMatch(pricing, /response\.status === 401[^\n]+signOut/);
   assert.equal((pricing.match(/response\.status === 401[^\n]+clearPricingToken/g) ?? []).length, 2);
   assert.match(auth, /showLogin\("Your Pricing Engine session expired\. Please sign in again\."\)/);
+  assert.match(pricing, /CONFIG_CACHE_TTL = 5 \* 60 \* 1000/);
+  assert.match(pricing, /QUOTE_CACHE_TTL = 60 \* 1000/);
+  assert.match(pricing, /if \(configRequests\[cacheKey\]\) return configRequests\[cacheKey\]/);
+  assert.match(pricing, /if \(quoteRequests\[requestKey\]\) return quoteRequests\[requestKey\]/);
+  assert.match(pricing, /sessionStorage\.setItem\(key, JSON\.stringify\(value\)\)/);
 });
