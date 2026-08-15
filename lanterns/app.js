@@ -163,7 +163,7 @@ function renderDiagram(calc) {
   els.diagram.innerHTML = `<svg viewBox="0 0 760 520" role="img" aria-label="Isometric cylindrical hanging lantern layout">
     <path class="cylinder-shell" d="M${drawing.leftX} ${drawing.topY} A${drawing.rx} ${drawing.ry} 0 0 0 ${drawing.rightX} ${drawing.topY} L${drawing.rightX} ${drawing.bottomY} A${drawing.rx} ${drawing.ry} 0 0 1 ${drawing.leftX} ${drawing.bottomY} Z" />
     ${rigging}${braces}
-    <ellipse class="cylinder-ring cylinder-back" cx="${drawing.cx}" cy="${drawing.topY}" rx="${drawing.rx}" ry="${drawing.ry}" />
+    <ellipse class="cylinder-ring" cx="${drawing.cx}" cy="${drawing.topY}" rx="${drawing.rx}" ry="${drawing.ry}" />
     <ellipse class="cylinder-ring" cx="${drawing.cx}" cy="${drawing.bottomY}" rx="${drawing.rx}" ry="${drawing.ry}" />
     <text class="dim-labels" x="380" y="505" text-anchor="middle">Ø ${calc.diameterMm} mm · ${calc.heightMm} mm high · ${calc.suppliedSections} sections</text>
   </svg>`;

@@ -8,6 +8,11 @@ const functionSource = source.match(/function diagramGeometry\([\s\S]*?\n}/)?.[0
 
 assert.ok(functionSource, "diagramGeometry must remain available to the Lantern renderer");
 
+test("draws both cylinder rings as solid lines", () => {
+  assert.equal(source.includes('class="cylinder-ring cylinder-back"'), false);
+  assert.equal((source.match(/<ellipse class="cylinder-ring"/g) ?? []).length, 2);
+});
+
 function geometry(diameterMm, heightMm) {
   const context = { diameterMm, heightMm, result: null };
   vm.runInNewContext(`${functionSource}; result = diagramGeometry(diameterMm, heightMm);`, context);

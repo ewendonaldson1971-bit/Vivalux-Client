@@ -3,7 +3,6 @@
 .lantern-photo { max-height: 420px; object-fit: contain; }
 .cylinder-shell { fill: rgba(52, 139, 226, 0.08); stroke: #53565a; stroke-width: 3; }
 .cylinder-ring { fill: none; stroke: #53565a; stroke-width: 8; }
-.cylinder-back { stroke-dasharray: 10 9; opacity: 0.45; }
 .cylinder-brace { stroke: #348be2; stroke-width: 3; }
 .cylinder-rigging { stroke: #7c858b; stroke-width: 2; }
 .cylinder-point { fill: #e4002b; }
