@@ -46,6 +46,16 @@
     }
   }
 
+  function safeClearPricingToken() {
+    var user = getCurrentUser();
+    if (!user || !user.username) return;
+    var sharedUser = Object.assign({}, user);
+    delete sharedUser.pricingToken;
+    window.__vivaluxCurrentUser = sharedUser;
+    safeWriteSession(sharedUser);
+    refreshPricing();
+  }
+
   function parseDiscount(value) {
     var raw = String(value || "").trim();
     if (!raw) return 0;
@@ -545,6 +555,7 @@
       showLogin();
       refreshPricing();
     },
+    clearPricingToken: safeClearPricingToken,
     checkLogin: authenticateUser
   };
 
@@ -558,7 +569,7 @@
       user = null;
     }
 
-    if (user && user.pricingToken) {
+    if (user && user.username) {
       unlock(user);
       return;
     }
@@ -572,11 +583,6 @@
   document.addEventListener("DOMContentLoaded", function () {
     bindCartNotifications();
     var user = getCurrentUser();
-    if (user && !user.pricingToken) {
-      safeClearSession();
-      window.__vivaluxCurrentUser = null;
-      user = null;
-    }
     if (user) {
       unlock(user);
     } else {
