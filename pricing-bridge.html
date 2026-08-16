@@ -4,10 +4,24 @@
   <meta charset="utf-8">
   <meta name="robots" content="noindex">
   <title>Vivalux pricing bridge</title>
+  <style>body{font:14px Arial,sans-serif;color:#53565a;margin:32px}h1{font-size:20px}p{line-height:1.5}.connected{color:#548a0c}.disconnected{color:#e4002b}</style>
 </head>
 <body>
-  <p>Vivalux pricing connection</p>
-  <script src="auth.js"></script>
+  <h1>Vivalux pricing connection</h1>
+  <p id="status">Checking your Vivalux Builder session…</p>
+  <script>
+    (function () {
+      "use strict";
+      var SESSION_KEY = "vivalux-auth-session";
+      function getUser() {
+        try { return JSON.parse(localStorage.getItem(SESSION_KEY) || "null"); } catch { return null; }
+      }
+      window.VivaluxAuth = {
+        getUser: getUser,
+        clearPricingToken: function () { try { localStorage.removeItem(SESSION_KEY); } catch {} }
+      };
+    }());
+  </script>
   <script src="pricing-config.js"></script>
   <script>
     (function () {
@@ -22,7 +36,7 @@
 
       window.addEventListener("message", function (event) {
         var request = event.data || {};
-        if (event.origin !== DESIGNER_ORIGIN || event.source !== window.parent || request.source !== "vivaframe-designer" || !request.id) return;
+        if (event.origin !== DESIGNER_ORIGIN || (event.source !== window.parent && event.source !== window.opener) || request.source !== "vivaframe-designer" || !request.id) return;
         if (!window.VivaluxPricing || !window.VivaluxAuth || !window.VivaluxAuth.getUser()) {
           reply(event.source, request.id, null, "Open Vivalux Builder and sign in to connect customer pricing.");
           return;
@@ -48,7 +62,12 @@
         reply(event.source, request.id, null, "Unsupported pricing request.");
       });
 
-      window.parent.postMessage({ source: "vivalux-pricing-bridge", ready: true }, DESIGNER_ORIGIN);
+      var target = window.opener || (window.parent !== window ? window.parent : null);
+      var user = window.VivaluxAuth.getUser();
+      var status = document.getElementById("status");
+      status.className = user && user.pricingToken ? "connected" : "disconnected";
+      status.textContent = user && user.pricingToken ? "Pricing connected. Keep this window open while designing." : "Open Vivalux Builder and sign in, then select Connect pricing again.";
+      if (target) target.postMessage({ source: "vivalux-pricing-bridge", ready: true }, DESIGNER_ORIGIN);
     }());
   </script>
 </body>
