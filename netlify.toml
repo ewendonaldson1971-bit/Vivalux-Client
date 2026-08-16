@@ -4,3 +4,27 @@
 
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
+[[redirects]]
+  from = "/vivaframe"
+  to = "https://vivaframe-designer-vivad.netlify.app/vivaframe"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/vivaframe/*"
+  to = "https://vivaframe-designer-vivad.netlify.app/vivaframe/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/_next/*"
+  to = "https://vivaframe-designer-vivad.netlify.app/_next/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/favicon.svg"
+  to = "https://vivaframe-designer-vivad.netlify.app/favicon.svg"
+  status = 200
+  force = true
